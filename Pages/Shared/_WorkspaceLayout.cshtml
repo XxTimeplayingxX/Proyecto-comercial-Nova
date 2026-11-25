@@ -1,0 +1,52 @@
+@using System.Security.Claims
+@{
+    var currentPage = ViewContext.RouteData.Values["page"] as string;
+    var title = ViewData["Title"] as string;
+    var email = User.FindFirstValue(ClaimTypes.Email);
+    var toasts = ViewData["Toasts"] as ToastMessage[] ?? [];
+}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@title | Comercial Nova</title>
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/toast.css" asp-append-version="true">
+    @await RenderSectionAsync("Styles", required: false)
+    <script src="~/js/toast.js" asp-append-version="true" defer></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</head>
+<body class="workspace">
+    <aside class="workspace__sidebar">
+        <partial name="_Brand" />
+        <nav class="workspace__nav" aria-label="Menú principal">
+            <a asp-page="/Index" aria-current="@(currentPage == "/Index" ? "page" : null)">
+                <span aria-hidden="true">▦</span> Dashboard
+            </a>
+            <a asp-page="/NuestraHistoria" aria-current="@(currentPage == "/NuestraHistoria" ? "page" : null)">
+                <span aria-hidden="true">▤</span> Nuestra historia
+            </a>
+        </nav>
+    </aside>
+
+    <div class="workspace__main">
+        <header class="workspace__header">
+            <p class="workspace__location">@title</p>
+            @if (!string.IsNullOrWhiteSpace(email))
+            {
+                <div class="workspace__account">
+                    <span title="@email">@email</span>
+                    <span class="workspace__avatar" aria-hidden="true">@email[..1].ToUpperInvariant()</span>
+                </div>
+            }
+        </header>
+        <main class="workspace__content">
+            @RenderBody()
+        </main>
+    </div>
+
+    <partial name="_ToastStack" model="toasts" />
+</body>
+</html>

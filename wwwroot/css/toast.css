@@ -1,0 +1,88 @@
+.toast-stack {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: grid;
+  box-sizing: border-box;
+  gap: 0.65rem;
+  width: min(25rem, 100%);
+  max-height: 100dvh;
+  overflow-y: auto;
+  padding: 1rem;
+  pointer-events: none;
+}
+
+.toast-stack:empty { display: none; }
+
+.toast {
+  --toast-accent: #1e40af;
+  --toast-bg: #eff6ff;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  overflow: hidden;
+  padding: 0.9rem 0.9rem 1rem;
+  border: 1px solid #dbe3ef;
+  border-inline-start: 4px solid var(--toast-accent);
+  border-radius: 0.65rem;
+  background: #fff;
+  box-shadow: 0 12px 30px #0f172a24;
+  color: #0f172a;
+  color-scheme: light;
+  pointer-events: auto;
+}
+
+.toast--success { --toast-accent: #166534; --toast-bg: #dcfce7; }
+.toast--information { --toast-accent: #1e40af; --toast-bg: #dbeafe; }
+.toast--error { --toast-accent: #b91c1c; --toast-bg: #fee2e2; }
+.toast--warning { --toast-accent: #92400e; --toast-bg: #fef3c7; }
+
+.toast__icon {
+  display: grid;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--toast-bg);
+  color: var(--toast-accent);
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+.toast__copy { overflow-wrap: anywhere; }
+.toast__copy strong { display: block; padding-top: 0.1rem; font-size: 0.9rem; }
+.toast__copy p { margin: 0.25rem 0 0; color: #475569; font-size: 0.82rem; line-height: 1.4; }
+
+.toast__close {
+  align-self: start;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 0.3rem;
+  background: transparent;
+  color: #475569;
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.toast__close:hover { background: #f1f5f9; }
+.toast__close:focus-visible { outline: 2px solid var(--toast-accent); }
+
+.toast__timer {
+  position: absolute;
+  inset: auto 0 0;
+  height: 0.25rem;
+  background: var(--toast-bg);
+}
+
+.toast__timer span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left;
+  background: var(--toast-accent);
+}

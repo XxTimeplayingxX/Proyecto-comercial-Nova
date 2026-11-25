@@ -1,0 +1,15 @@
+@model IReadOnlyList<ToastMessage>
+
+<section class="toast-stack" aria-label="Notificaciones" data-toast-stack>
+    @foreach (var toast in Model)
+    {
+        <partial name="_Toast" model="toast" />
+    }
+</section>
+
+@foreach (var status in Enum.GetValues<ToastStatus>())
+{
+    <template data-toast-template="@status.ToString().ToLowerInvariant()">
+        <partial name="_Toast" model="@(new ToastMessage(status, string.Empty, string.Empty))" />
+    </template>
+}

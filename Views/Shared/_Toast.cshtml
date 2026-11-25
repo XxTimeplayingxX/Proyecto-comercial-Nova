@@ -1,0 +1,21 @@
+@model ToastMessage
+@{
+    var variant = Model.Status.ToString().ToLowerInvariant();
+    var role = Model.Status == ToastStatus.Error ? "alert" : "status";
+    var symbol = Model.Status switch
+    {
+        ToastStatus.Success => "✓",
+        ToastStatus.Information => "i",
+        ToastStatus.Error => "×",
+        _ => "!"
+    };
+}
+<div class="toast toast--@variant" data-toast data-toast-duration="@Model.DurationSeconds">
+    <span class="toast__icon" aria-hidden="true">@symbol</span>
+    <div class="toast__copy" role="@role">
+        <strong>@Model.Title</strong>
+        <p>@Model.Message</p>
+    </div>
+    <button type="button" class="toast__close" aria-label="Cerrar notificación" data-toast-close hidden>×</button>
+    <div class="toast__timer" aria-hidden="true"><span data-toast-progress></span></div>
+</div>

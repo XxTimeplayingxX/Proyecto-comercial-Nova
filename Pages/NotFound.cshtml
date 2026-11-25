@@ -1,0 +1,29 @@
+@page "/404"
+@{
+    Response.StatusCode = StatusCodes.Status404NotFound;
+}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pantalla no existe | Comercial Nova</title>
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/not-found.css" asp-append-version="true">
+</head>
+<body class="not-found">
+    <header>
+        <partial name="_Brand" />
+    </header>
+    <main class="not-found__content" aria-labelledby="not-found-heading">
+        <div class="not-found__illustration" aria-hidden="true">
+            <span class="not-found__target"></span>
+            <span class="not-found__pointer"></span>
+        </div>
+        <h1 id="not-found-heading">Pantalla no existe</h1>
+        <p>Revisa la dirección o vuelve al inicio.</p>
+        <a class="login-submit" href="~/">Volver al inicio <span aria-hidden="true">→</span></a>
+    </main>
+</body>
+</html>

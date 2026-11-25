@@ -1,0 +1,61 @@
+@font-face {
+  font-family: Inter;
+  src: url("../fonts/inter-variable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  color: #0f172a;
+  background: #fff;
+  --nova-blue: #2563eb;
+  --nova-blue-dark: #1e40af;
+  --nova-muted: #52627a;
+  --nova-border: #dbe3ef;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; }
+input, button { font: inherit; }
+[hidden] { display: none !important; }
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: inherit;
+  font-size: 1rem;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  text-decoration: none;
+}
+
+.brand__mark {
+  position: relative;
+  display: grid;
+  flex: none;
+  width: 2.05rem;
+  height: 2.05rem;
+  place-items: center;
+  border: 1px solid #dbeafe;
+  border-radius: 0.55rem;
+  background: #eff6ff;
+  color: var(--nova-blue);
+}
+
+.brand__mark::before, .brand__mark::after, .brand__mark > span {
+  position: absolute;
+  width: 0.85rem;
+  height: 0.85rem;
+  transform: scaleY(0.6) rotate(45deg);
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  content: "";
+}
+
+.brand__mark::before { top: 0.38rem; background: #eff6ff; z-index: 1; }
+.brand__mark::after { top: 0.75rem; }
+.brand__dot { color: var(--nova-blue); }

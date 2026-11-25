@@ -1,0 +1,86 @@
+@model LoginInput
+@{
+    var emailInvalid = ViewData.ModelState["Email"]?.Errors.Count > 0;
+    var passwordInvalid = ViewData.ModelState["Password"]?.Errors.Count > 0;
+    ToastMessage[] toasts = ViewData["Toast"] is ToastMessage toast ? [toast] : [];
+}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Iniciar sesión | Comercial Nova</title>
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/toast.css" asp-append-version="true">
+    <script src="~/js/login.js" asp-append-version="true" defer></script>
+    <script src="~/js/toast.js" asp-append-version="true" defer></script>
+</head>
+<body>
+    <main class="login-layout">
+        <section class="login-main" aria-labelledby="login-heading">
+            <header class="login-header">
+                <partial name="_Brand" />
+            </header>
+
+            <div class="login-content">
+                <h1 id="login-heading">Bienvenido de nuevo</h1>
+                <p class="login-intro">Ingresa tus credenciales para continuar.</p>
+
+                <form asp-route="SignIn" method="post" class="login-form">
+                    <div class="field">
+                        <label asp-for="Email">Correo electrónico</label>
+                        <div class="field__input" data-invalid="@emailInvalid.ToString().ToLowerInvariant()">
+                            <span class="field-icon field-icon--mail" aria-hidden="true"></span>
+                            <input asp-for="Email" type="email" placeholder="nombre@ejemplo.com"
+                                autocomplete="username" maxlength="254" spellcheck="false" required
+                                aria-invalid="@emailInvalid.ToString().ToLowerInvariant()" aria-describedby="email-error">
+                        </div>
+                        <span asp-validation-for="Email" class="field__error" id="email-error"></span>
+                    </div>
+
+                    <div class="field">
+                        <label for="Password">Contraseña</label>
+                        <div class="field__input" data-invalid="@passwordInvalid.ToString().ToLowerInvariant()">
+                            <span class="field-icon field-icon--lock" aria-hidden="true"></span>
+                            <input id="Password" name="Password" type="password" placeholder="Ingresa tu contraseña"
+                                autocomplete="current-password" maxlength="1024" required
+                                aria-invalid="@passwordInvalid.ToString().ToLowerInvariant()" aria-describedby="password-error">
+                            <button type="button" class="password-toggle" aria-pressed="false" aria-controls="Password"
+                                aria-label="Mostrar contraseña" data-password-toggle hidden>
+                                <span class="eye" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="field__error" id="password-error"></span>
+                    </div>
+
+                    <label class="remember">
+                        <input asp-for="RememberMe">
+                        Recordarme en este equipo
+                    </label>
+
+                    <button type="submit" class="login-submit">
+                        <span data-submit-label>Iniciar sesión</span><span aria-hidden="true">→</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <aside class="login-aside" aria-labelledby="aside-heading">
+            <div class="aside-content">
+                <figure class="desk-photo">
+                    <img src="~/images/nova-login-desk.jpg" asp-append-version="true" width="960" height="720"
+                        alt="Laptop, teléfono y audífonos sobre un escritorio de madera">
+                </figure>
+                <h2 id="aside-heading">Tecnología que conecta.</h2>
+                <p>Gestiona tus productos y ventas desde un solo lugar.</p>
+                <ul class="aside-features">
+                    <li><span aria-hidden="true">✓</span> Inventario y productos</li>
+                    <li><span aria-hidden="true">✓</span> Ventas y facturación</li>
+                </ul>
+            </div>
+        </aside>
+    </main>
+    <partial name="_ToastStack" model="toasts" />
+</body>
+</html>

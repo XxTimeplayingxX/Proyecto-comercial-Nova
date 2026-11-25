@@ -1,6 +1,6 @@
 # Nova
 
-Prototipo universitario para un comercio de tecnología. El proyecto usa C# y ASP.NET Core 10 con MVC registrado. La pantalla inicial muestra **Bienvenidos** con HTML, CSS y JavaScript. Se sirve como archivo estático y funciona sin conexión a Supabase. En esta etapa quedan pendientes los controladores y las rutas de API.
+Prototipo universitario para un comercio de tecnología. El proyecto usa C# y ASP.NET Core 10 con MVC, HTML, CSS y JavaScript. La pantalla inicial solicita el inicio de sesión y, con una sesión válida, muestra **Bienvenidos**.
 
 ## Ejecutar en local
 
@@ -10,7 +10,7 @@ Instala el SDK de .NET 10 y abre una terminal en la carpeta del proyecto. Ejecut
 dotnet run --project Nova.csproj
 ```
 
-Abre [http://localhost:5180](http://localhost:5180). Para detener el servidor, presiona `Ctrl+C`.
+Abre [http://localhost:5180](http://localhost:5180) para iniciar sesión. Para ver la pantalla de ruta inexistente, abre [http://localhost:5180/404](http://localhost:5180/404). Para detener el servidor, presiona `Ctrl+C`.
 
 ## Estructura
 
@@ -19,12 +19,16 @@ Abre [http://localhost:5180](http://localhost:5180). Para detener el servidor, p
 | `Program.cs` | Registra MVC, las opciones de Supabase y el cliente HTTP mediante inyección de dependencias. |
 | `Models/Producto.cs` | Modelo inicial de un producto. |
 | `Dtos/ProductoDto.cs` | Contrato de ejemplo para exponer un producto y su disponibilidad. |
-| `Infrastructure/SupabaseOptions.cs` | Configuración del cliente para la Data API de Supabase. |
-| `wwwroot/` | Pantalla de bienvenida y sus recursos. |
+| `Controllers/LoginController.cs` | Presenta el formulario, valida la solicitud y crea la sesión web. |
+| `Infrastructure/SupabaseAuthService.cs` | Cliente HTTP de Supabase Auth, registrado por inyección de dependencias. |
+| `Dtos/SupabaseLoginDto.cs` | Contrato del correo, la contraseña y los datos de sesión que usa Nova. |
+| `Views/Shared/_ToastStack.cshtml` | Notificaciones apilables con variantes `Success`, `Information`, `Error` y `Warning`. |
+| `Pages/NotFound.cshtml` | Pantalla que se muestra cuando la dirección no existe. Conserva el estado HTTP 404. |
+| `Pages/`, `Views/` y `wwwroot/` | Pantallas de bienvenida y login, con sus recursos. |
 
-## Conexión futura a Supabase
+## Configurar el login de Supabase
 
-Cuando se incorporen los controladores, los servicios podrán recibir `IHttpClientFactory` por constructor y solicitar `CreateClient("Supabase")`. El cliente apunta a `/rest/v1/` y envía una clave publicable en el encabezado `apikey`. Para usarlo en desarrollo, configura estas variables en PowerShell:
+Usa la URL del proyecto y su clave publicable. En desarrollo puedes guardarlas en `appsettings.Local.json`, excluido de Git y de la publicación. Las variables de entorno tienen prioridad y también sirven fuera de desarrollo:
 
 ```powershell
 $env:Supabase__ProjectUrl = 'https://TU-PROYECTO.supabase.co'
@@ -32,7 +36,13 @@ $env:Supabase__PublishableKey = 'sb_publishable_TU_CLAVE'
 dotnet run --project Nova.csproj
 ```
 
-El flujo previsto es navegador → API de Nova → Data API de Supabase. Define los permisos y las políticas de seguridad por fila (RLS) de las tablas que expongas. Para operaciones de usuarios autenticados, el backend deberá enviar su token de acceso en el encabezado `Authorization` de cada solicitud correspondiente. Consulta la [Data API de Supabase](https://supabase.com/docs/guides/api) y la [guía de claves de API](https://supabase.com/docs/guides/getting-started/api-keys).
+El controlador envía `email` y `password` a `POST /auth/v1/token?grant_type=password`. Si Supabase devuelve HTTP 200 con una sesión válida, Nova crea una cookie de autenticación cifrada y `HttpOnly`, redirige a la bienvenida y muestra el toast de éxito. **Recordarme en este equipo** conserva la cookie al cerrar el navegador hasta el vencimiento indicado por Supabase. El prototipo solicita un nuevo login al vencer el token. Si Supabase rechaza la solicitud o no está disponible, el formulario muestra el toast de error. [Documentación de Supabase Auth](https://supabase.com/docs/guides/auth/passwords)
+
+El cliente HTTP nombrado `Supabase` queda disponible para futuras solicitudes a la Data API bajo `/rest/v1/`. Los servicios podrán enviar el token de acceso del usuario en `Authorization` y aplicar los permisos y políticas RLS correspondientes. [Data API de Supabase](https://supabase.com/docs/guides/api)
+
+## Notificaciones
+
+Cada toast dura seis segundos por defecto y se puede cerrar con la ×. La barra y el temporizador se pausan mientras el puntero o el foco estén en la notificación. Para mostrar un toast desde JavaScript en una página que use `_ToastStack`, llama a `NovaToasts.show({ status: "information", title: "Título", message: "Mensaje" })`. Usa `durationSeconds` para ajustar la duración de un aviso.
 
 ## Publicar en GitHub
 

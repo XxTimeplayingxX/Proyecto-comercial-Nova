@@ -1,0 +1,19 @@
+@page "/Bienvenida"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@attribute [Microsoft.AspNetCore.Mvc.ResponseCache(NoStore = true, Location = Microsoft.AspNetCore.Mvc.ResponseCacheLocation.None)]
+@{
+    Layout = "_WorkspaceLayout";
+    ViewData["Title"] = "Dashboard";
+    if (TempData["LoginSuccess"] is true)
+    {
+        ViewData["Toasts"] = new[] { new ToastMessage(ToastStatus.Success, "Sesión iniciada", "Ya puedes continuar en Comercial Nova.") };
+    }
+}
+
+@section Scripts {
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+}
+
+<div class="welcome">
+    <h1>Bienvenidos</h1>
+</div>

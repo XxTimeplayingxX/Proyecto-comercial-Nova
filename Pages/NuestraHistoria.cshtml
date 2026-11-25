@@ -1,0 +1,73 @@
+@page "/NuestraHistoria"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@attribute [Microsoft.AspNetCore.Mvc.ResponseCache(NoStore = true, Location = Microsoft.AspNetCore.Mvc.ResponseCacheLocation.None)]
+@{
+    Layout = "_WorkspaceLayout";
+    ViewData["Title"] = "Nuestra historia";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/story.css" asp-append-version="true">
+}
+
+<article class="story" aria-labelledby="story-title">
+    <header class="story__intro">
+        <h1 id="story-title">Tecnología que conecta, innovación que transforma.</h1>
+        <p>Conoce quiénes somos y hacia dónde queremos llegar.</p>
+    </header>
+
+    <img class="story__photo" src="~/images/nova-login-desk.jpg" asp-append-version="true"
+        width="960" height="720" alt="Laptop, teléfono y audífonos sobre un escritorio de madera">
+
+    <section class="story__card story__history" aria-labelledby="story-origin">
+        <h2 id="story-origin">Nuestra historia</h2>
+        <p>Comercial Nova nació con el propósito de acercar la tecnología a las personas, ofreciendo productos que facilitan su vida cotidiana. Nuestro crecimiento nos ha impulsado a innovar en nuestros procesos y a adoptar soluciones digitales para brindar una experiencia comercial eficiente, confiable y humana.</p>
+    </section>
+
+    <div class="story__principles">
+        <section class="story__card" aria-labelledby="story-mission">
+            <span class="story__icon" aria-hidden="true">⚑</span>
+            <h2 id="story-mission">Misión</h2>
+            <p>Ofrecer productos tecnológicos de calidad y una atención cercana. Buscamos que comprar en Nova sea sencillo mediante procesos comerciales claros y soluciones que generen confianza.</p>
+        </section>
+        <section class="story__card" aria-labelledby="story-vision">
+            <span class="story__icon" aria-hidden="true">◎</span>
+            <h2 id="story-vision">Visión</h2>
+            <p>Ser un referente en la comercialización de tecnología por la calidad del servicio, la innovación y la capacidad de adaptarnos a las necesidades de nuestros clientes.</p>
+        </section>
+    </div>
+
+    <section class="story__values" aria-labelledby="story-values">
+        <h2 id="story-values">Nuestros valores</h2>
+        <ul>
+            <li class="story__card">
+                <span class="story__icon" aria-hidden="true">✦</span>
+                <h3>Innovación</h3>
+                <p>Buscamos nuevas formas de mejorar nuestros procesos y la experiencia de compra.</p>
+            </li>
+            <li class="story__card">
+                <span class="story__icon" aria-hidden="true">◈</span>
+                <h3>Integridad</h3>
+                <p>Actuamos con transparencia y coherencia en cada decisión comercial.</p>
+            </li>
+            <li class="story__card">
+                <span class="story__icon" aria-hidden="true">✓</span>
+                <h3>Compromiso</h3>
+                <p>Cumplimos nuestros acuerdos y dedicamos atención a lo que nuestros clientes necesitan.</p>
+            </li>
+            <li class="story__card">
+                <span class="story__icon" aria-hidden="true">↗</span>
+                <h3>Servicio</h3>
+                <p>Escuchamos y orientamos a cada persona para que pueda elegir con confianza.</p>
+            </li>
+        </ul>
+    </section>
+
+    <figure class="story__quote">
+        <span aria-hidden="true">“</span>
+        <blockquote>«Crecer no es solamente vender más, también es aprender a hacerlo mejor.»</blockquote>
+        <figcaption>Comercial Nova</figcaption>
+    </figure>
+
+    <footer class="story__footer">Comercial Nova · Proyecto académico UEES</footer>
+</article>
