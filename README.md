@@ -1,5 +1,26 @@
 # Nova
 
+## Catálogo de productos
+
+La pantalla `/Productos` está disponible desde el sidebar después del login. Conserva el layout compartido, la tipografía Inter y la paleta azul. Ofrece búsqueda por nombre o SKU, filtros por marca, categoría y estado, paginación, actualización manual y detalle en un diálogo accesible. Las opciones de marca y categoría se consultan en Supabase. No se incluyen productos ni indicadores de demostración en la pantalla.
+
+Los controladores usan la clave publicable configurada y el token de la sesión web para respetar los permisos RLS. Las respuestas del catálogo no se almacenan en caché. No guardes el correo, la contraseña ni tokens en archivos del repositorio.
+
+| Ruta local (GET, requiere sesión) | Consulta de Supabase |
+| --- | --- |
+| `/api/productos?buscar=&marca=&categoria=&estado=&pagina=1&tamano=10` | `products?select=*,brands(id,name),categories(id,name)`; filtros por marca, categoría y búsqueda por nombre/SKU. |
+| `/api/productos/kpi` | Productos activos, clasificados usando `stock` y `minimum_stock`. |
+| `/api/productos/filtros` | Tablas `brands` y `categories`. |
+| `/api/productos/{id}` | `products?id=eq.{id}&select=*,brands(id,name),categories(id,name)`. |
+
+Los KPI son globales y no cambian con los filtros: total de productos activos, disponibles (`stock > minimum_stock`), stock bajo (`0 < stock <= minimum_stock`) y agotados (`stock = 0`). Los inactivos se pueden consultar en la tabla pero no forman parte de esos indicadores. La colección Postman no documenta un RPC específico para estos cuatro indicadores; se calculan en el servidor con filas reales de `products`. El RPC de dashboard puede contar stock bajo de otra forma y no se mezcla con estos resultados.
+
+El servicio recorre todas las páginas de Supabase para no truncar los indicadores. El estado se filtra en C# porque depende de la comparación entre dos columnas. La tabla pagina el resultado en el servidor de Nova. Para catálogos grandes conviene implementar un RPC paginado que devuelva el estado calculado y sus conteos en una única consulta.
+
+`image_path` se muestra cuando es una URL HTTPS o una ruta local absoluta. Si falta o falla se usa un ícono, sin inventar fotografías. La colección no especifica el bucket ni un endpoint para resolver rutas relativas de Storage o firmar imágenes privadas. Tampoco documenta un campo de descripción del producto; el detalle utiliza los campos que sí están documentados.
+
+La pantalla muestra estados de carga, ausencia de coincidencias y errores recuperables. Los indicadores fallidos muestran `—`, nunca ceros inventados. Una sesión vencida solicita iniciar sesión otra vez.
+
 Prototipo universitario para un comercio de tecnología. El proyecto usa C# y ASP.NET Core 10 con MVC, HTML, CSS y JavaScript. La pantalla inicial solicita el inicio de sesión y, con una sesión válida, muestra **Bienvenidos**.
 
 ## Ejecutar en local
@@ -17,8 +38,8 @@ Abre [http://localhost:5180](http://localhost:5180) para iniciar sesión. Para v
 | Ubicación | Función |
 | --- | --- |
 | `Program.cs` | Registra MVC, las opciones de Supabase y el cliente HTTP mediante inyección de dependencias. |
-| `Models/Producto.cs` | Modelo inicial de un producto. |
-| `Dtos/ProductoDto.cs` | Contrato de ejemplo para exponer un producto y su disponibilidad. |
+| `Models/Producto.cs` | Contrato de Supabase y clasificación del estado de stock. |
+| `Dtos/ProductoDto.cs` | Contratos del catálogo, detalle e indicadores de inventario. |
 | `Controllers/LoginController.cs` | Presenta el formulario, valida la solicitud y crea la sesión web. |
 | `Infrastructure/SupabaseAuthService.cs` | Cliente HTTP de Supabase Auth, registrado por inyección de dependencias. |
 | `Dtos/SupabaseLoginDto.cs` | Contrato del correo, la contraseña y los datos de sesión que usa Nova. |

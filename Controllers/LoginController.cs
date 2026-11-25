@@ -36,7 +36,13 @@ public sealed class LoginController(SupabaseAuthService authService, ILogger<Log
         {
             session = await authService.SignInAsync(input.Email, input.Password, cancellationToken);
         }
-        catch (Exception exception) when (exception is HttpRequestException or JsonException or OptionsValidationException
+        catch (OptionsValidationException exception)
+        {
+            logger.LogError("Configuración de Supabase incompleta o inválida: {ValidationErrors}",
+                string.Join("; ", exception.Failures));
+            return ShowError(input, "Falta configurar la conexión con Supabase. Revisa la URL del proyecto y la clave publicable.");
+        }
+        catch (Exception exception) when (exception is HttpRequestException or JsonException
             || (exception is OperationCanceledException && !cancellationToken.IsCancellationRequested))
         {
             logger.LogWarning("No se pudo completar el login en Supabase Auth. Tipo de error: {ErrorType}.",

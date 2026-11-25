@@ -13,6 +13,8 @@ if (builder.Environment.IsDevelopment())
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<SupabaseCatalogoService>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -23,6 +25,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
             ? CookieSecurePolicy.SameAsRequest
             : CookieSecurePolicy.Always;
         options.SlidingExpiration = false;
+        options.Events.OnRedirectToLogin = context =>
+        {
+            if (context.Request.Path.StartsWithSegments("/api")) context.Response.StatusCode = 401;
+            else context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
     });
 builder.Services.AddOptions<SupabaseOptions>()
     .BindConfiguration(SupabaseOptions.SectionName)
@@ -36,6 +44,7 @@ builder.Services.AddHttpClient(SupabaseOptions.SectionName, (services, client) =
     var options = services.GetRequiredService<IOptions<SupabaseOptions>>().Value;
     client.BaseAddress = new Uri(options.ProjectUrl!, "/rest/v1/");
     client.DefaultRequestHeaders.Add("apikey", options.PublishableKey);
+    client.Timeout = TimeSpan.FromSeconds(15);
 });
 
 builder.Services.AddHttpClient<SupabaseAuthService>(client =>

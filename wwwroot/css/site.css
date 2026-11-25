@@ -40,6 +40,7 @@
 }
 
 .workspace__nav a span { font-size: 1.15rem; line-height: 1; }
+.workspace__nav .nav-icon { width: 1.15rem; height: 1.15rem; flex: none; }
 .workspace__nav a:hover { background: #f4f6fa; }
 .workspace__nav a[aria-current="page"] { background: var(--workspace-selected); color: var(--nova-blue-dark); }
 .workspace a:focus-visible { outline: 2px solid var(--nova-blue); outline-offset: 2px; }

@@ -22,6 +22,9 @@ public sealed class SupabaseAuthService(
         if (response.StatusCode != HttpStatusCode.OK)
         {
             logger.LogInformation("Supabase Auth devolvió HTTP {StatusCode}.", (int)response.StatusCode);
+            if (response.StatusCode is not HttpStatusCode.BadRequest and not HttpStatusCode.Unauthorized
+                and not HttpStatusCode.UnprocessableEntity)
+                response.EnsureSuccessStatusCode();
             return null;
         }
 

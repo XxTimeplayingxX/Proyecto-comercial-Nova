@@ -1,0 +1,54 @@
+@page "/Productos"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@attribute [Microsoft.AspNetCore.Mvc.ResponseCache(NoStore = true, Location = Microsoft.AspNetCore.Mvc.ResponseCacheLocation.None)]
+@{
+    Layout = "_WorkspaceLayout";
+    ViewData["Title"] = "Productos";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/productos.css" asp-append-version="true">
+}
+@section Scripts {
+    <script src="~/js/productos.js" asp-append-version="true" defer></script>
+}
+
+<div class="catalogo">
+    <p class="catalogo__breadcrumb">Catálogo <span>/</span> <strong>Productos</strong></p>
+    <header class="catalogo__heading">
+        <div><h1>Productos</h1><p>Gestiona tu catálogo tecnológico y controla las existencias en tiempo real.</p></div>
+        <button class="catalogo__primary" id="actualizar" type="button"><span aria-hidden="true">↻</span> Actualizar catálogo</button>
+    </header>
+
+    <section class="catalogo__kpis" aria-label="Resumen del catálogo activo" aria-busy="true" id="kpis">
+        <article class="kpi"><div><h2>Total de productos</h2><strong data-kpi="total">—</strong><p>En catálogo activo</p></div><span class="kpi__icon" aria-hidden="true">▣</span></article>
+        <article class="kpi kpi--success"><div><h2>Disponibles</h2><strong data-kpi="disponibles">—</strong><p>● Existencias óptimas</p></div><span class="kpi__icon" aria-hidden="true">✓</span></article>
+        <article class="kpi kpi--warning"><div><h2>Stock bajo</h2><strong data-kpi="stockBajo">—</strong><p>● Reposición requerida</p></div><span class="kpi__icon" aria-hidden="true">⚠</span></article>
+        <article class="kpi kpi--danger"><div><h2>Agotados</h2><strong data-kpi="agotados">—</strong><p>● Sin existencias (0 un.)</p></div><span class="kpi__icon" aria-hidden="true">!</span></article>
+    </section>
+    <p class="catalogo__notice" id="kpi-error" role="status" hidden></p>
+
+    <form class="catalogo__filters" id="filtros" role="search" aria-label="Filtrar productos">
+        <label class="catalogo__search"><span aria-hidden="true">⌕</span><input id="buscar" name="buscar" maxlength="120" type="search" placeholder="Buscar por nombre o código SKU…" aria-label="Buscar por nombre o SKU"></label>
+        <select id="marca" name="marca" aria-label="Marca" aria-busy="true" disabled><option value="">Todas las marcas</option></select>
+        <select id="categoria" name="categoria" aria-label="Categoría" aria-busy="true" disabled><option value="">Todas las categorías</option></select>
+        <select id="estado" name="estado" aria-label="Estado"><option value="">Todos los estados</option><option value="disponible">Disponible</option><option value="bajo">Stock bajo</option><option value="agotado">Agotado</option><option value="inactivo">Inactivo</option></select>
+        <button type="reset" class="catalogo__secondary">↺ Limpiar filtros</button>
+    </form>
+    <p class="catalogo__notice" id="filtro-error" role="status" hidden></p>
+
+    <section class="catalogo__table" aria-label="Catálogo de productos" id="resultados" aria-busy="true">
+        <div class="catalogo__scroll"><table>
+            <thead><tr><th scope="col">Producto</th><th scope="col">Marca</th><th scope="col">Categoría</th><th scope="col" class="numero">Precio</th><th scope="col" class="numero">Stock disp.</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
+            <tbody id="productos"><partial name="_ProductosSkeleton" /></tbody>
+        </table></div>
+        <div id="catalogo-error" class="catalogo__empty" role="alert" hidden><p id="catalogo-error-text"></p><button type="button" class="catalogo__secondary" id="reintentar">Reintentar</button></div>
+        <footer class="catalogo__pagination"><span id="conteo" role="status" aria-live="polite">Consultando catálogo…</span><div><button type="button" id="anterior" aria-label="Página anterior" disabled>‹</button><span id="pagina">1</span><button type="button" id="siguiente" aria-label="Página siguiente" disabled>›</button></div></footer>
+    </section>
+    <p class="catalogo__footnote">Los indicadores resumen los productos activos. El stock bajo se calcula según el mínimo de cada producto.</p>
+</div>
+
+<dialog id="detalle" class="producto-detalle" aria-labelledby="detalle-titulo">
+    <header><div><p>Catálogo / Detalle del producto</p><h2 id="detalle-titulo">Detalle del producto</h2></div><button type="button" id="cerrar-detalle" aria-label="Cerrar detalle">×</button></header>
+    <div id="detalle-contenido" aria-live="polite" aria-busy="false"></div>
+</dialog>
+

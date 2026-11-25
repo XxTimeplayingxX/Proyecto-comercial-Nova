@@ -11,6 +11,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@title | Comercial Nova</title>
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" asp-append-version="true">
     <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/toast.css" asp-append-version="true">
@@ -24,6 +25,9 @@
         <nav class="workspace__nav" aria-label="Menú principal">
             <a asp-page="/Index" aria-current="@(currentPage == "/Index" ? "page" : null)">
                 <span aria-hidden="true">▦</span> Dashboard
+            </a>
+            <a asp-page="/Productos" aria-current="@(currentPage == "/Productos" ? "page" : null)">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16v14H4zM3 3h18v4H3zM9 11h6" /></svg> Productos
             </a>
             <a asp-page="/NuestraHistoria" aria-current="@(currentPage == "/NuestraHistoria" ? "page" : null)">
                 <span aria-hidden="true">▤</span> Nuestra historia
