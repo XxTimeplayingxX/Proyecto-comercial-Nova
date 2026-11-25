@@ -7,16 +7,20 @@
 }
 @section Styles {
     <link rel="stylesheet" href="~/css/productos.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/modal.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/producto-form.css" asp-append-version="true">
 }
 @section Scripts {
+    <script src="~/js/modal.js" asp-append-version="true" defer></script>
     <script src="~/js/productos.js" asp-append-version="true" defer></script>
+    <script src="~/js/producto-form.js" asp-append-version="true" defer></script>
 }
 
 <div class="catalogo">
     <p class="catalogo__breadcrumb">Catálogo <span>/</span> <strong>Productos</strong></p>
     <header class="catalogo__heading">
         <div><h1>Productos</h1><p>Gestiona tu catálogo tecnológico y controla las existencias en tiempo real.</p></div>
-        <button class="catalogo__primary" id="actualizar" type="button"><span aria-hidden="true">↻</span> Actualizar catálogo</button>
+        <div class="catalogo__actions"><button class="catalogo__secondary" id="actualizar" type="button"><span aria-hidden="true">↻</span> Actualizar</button><button class="catalogo__primary" type="button" data-modal-open="nuevo-producto"><span aria-hidden="true">+</span> Nuevo producto</button></div>
     </header>
 
     <section class="catalogo__kpis" aria-label="Resumen del catálogo activo" aria-busy="true" id="kpis">
@@ -46,6 +50,8 @@
     </section>
     <p class="catalogo__footnote">Los indicadores resumen los productos activos. El stock bajo se calcula según el mínimo de cada producto.</p>
 </div>
+
+<partial name="_Modal" model='new ModalOptions("nuevo-producto", "Nuevo producto", "Catálogo / Agregar producto", "Registra un producto en el catálogo comercial de Nova.", "_ProductoFormulario", "producto-form", "Guardar producto")' />
 
 <dialog id="detalle" class="producto-detalle" aria-labelledby="detalle-titulo">
     <header><div><p>Catálogo / Detalle del producto</p><h2 id="detalle-titulo">Detalle del producto</h2></div><button type="button" id="cerrar-detalle" aria-label="Cerrar detalle">×</button></header>

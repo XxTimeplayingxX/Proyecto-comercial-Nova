@@ -1,5 +1,15 @@
 # Nova
 
+## Nuevo producto y modal reutilizable
+
+En `/Productos`, **Nuevo producto** abre un formulario modal con la paleta azul y tipografía Inter del proyecto. Permite registrar nombre, SKU (manual o generado), categoría y marca activas, estado comercial, descripción opcional, URL HTTPS de imagen, precio y stock mínimo. El stock inicial es cero; las entradas se registran mediante ajustes de inventario. La carga de archivos queda pendiente de definir Storage.
+
+`POST /api/productos` requiere sesión y token antifalsificación; el servidor envía `POST /rest/v1/products?select=id` con `Prefer: return=representation`, clave publicable y JWT del usuario. RLS exige un administrador activo. No se envía `stock`; se respeta su valor predeterminado. El formulario conserva los datos ante errores, identifica SKU duplicado y permisos insuficientes, y actualiza listado e indicadores al confirmar la creación. Los reintentos de una escritura no son automáticos.
+
+El componente compartido está en `Views/Shared/_Modal.cshtml`, configurado con `Models/ModalOptions.cs`. Recibe ID, título, descripción, parcial de contenido y, opcionalmente, ID de formulario y texto de envío. Incluir `modal.css` y `modal.js`; usar `data-modal-open="ID"` para abrir y `data-modal-close` para cerrar. El diálogo nativo gestiona foco y Escape. `data-busy="true"` bloquea el cierre durante una operación. El formulario de producto vive en `Pages/Shared/_ProductoFormulario.cshtml`, con estilos y lógica propios.
+
+Validación del 2026-11-25: compilación y 14 comprobaciones HTTP en un host temporal con autenticación y Supabase simulados (creación, contrato saliente, CSRF, autorización, campos inválidos, duplicado y permisos); render Razor y sintaxis JavaScript comprobados. No se insertaron productos en Supabase. Revisión visual en navegador y prueba de escritura con una sesión real pendientes.
+
 ## Catálogo de productos
 
 La pantalla `/Productos` está disponible desde el sidebar después del login. Conserva el layout compartido, la tipografía Inter y la paleta azul. Ofrece búsqueda por nombre o SKU, filtros por marca, categoría y estado, paginación, actualización manual y detalle en un diálogo accesible. Las opciones de marca y categoría se consultan en Supabase. No se incluyen productos ni indicadores de demostración en la pantalla.
@@ -17,7 +27,7 @@ Los KPI son globales y no cambian con los filtros: total de productos activos, d
 
 El servicio recorre todas las páginas de Supabase para no truncar los indicadores. El estado se filtra en C# porque depende de la comparación entre dos columnas. La tabla pagina el resultado en el servidor de Nova. Para catálogos grandes conviene implementar un RPC paginado que devuelva el estado calculado y sus conteos en una única consulta.
 
-`image_path` se muestra cuando es una URL HTTPS o una ruta local absoluta. Si falta o falla se usa un ícono, sin inventar fotografías. La colección no especifica el bucket ni un endpoint para resolver rutas relativas de Storage o firmar imágenes privadas. Tampoco documenta un campo de descripción del producto; el detalle utiliza los campos que sí están documentados.
+`image_path` se muestra cuando es una URL HTTPS o una ruta local absoluta. Si falta o falla se usa un ícono, sin inventar fotografías. La colección no especifica el bucket ni un endpoint para resolver rutas relativas de Storage o firmar imágenes privadas. El formulario de alta admite `description`, verificado en el esquema; el diálogo de detalle actual todavía no presenta ese campo.
 
 La pantalla muestra estados de carga, ausencia de coincidencias y errores recuperables. Los indicadores fallidos muestran `—`, nunca ceros inventados. Una sesión vencida solicita iniciar sesión otra vez.
 

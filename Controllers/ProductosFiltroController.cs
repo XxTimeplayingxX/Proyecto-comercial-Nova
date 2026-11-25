@@ -7,6 +7,6 @@ namespace Nova.Controllers;
 public sealed class ProductosFiltroController(SupabaseCatalogoService catalogo) : CatalogoControllerBase
 {
     [HttpGet]
-    public Task<IActionResult> Obtener(CancellationToken ct) => ConsultarAsync(async () =>
-        Ok(new { marcas = await catalogo.MarcasAsync(ct), categorias = await catalogo.CategoriasAsync(ct) }));
+    public Task<IActionResult> Obtener(CancellationToken ct, [FromQuery] bool activos = false) => ConsultarAsync(async () =>
+        Ok(new { marcas = await catalogo.MarcasAsync(ct, activos), categorias = await catalogo.CategoriasAsync(ct, activos) }));
 }

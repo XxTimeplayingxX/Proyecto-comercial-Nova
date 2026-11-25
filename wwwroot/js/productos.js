@@ -177,5 +177,6 @@
     await Promise.allSettled([loadList(), loadKpis(), loadFilters()]);
     $('actualizar').disabled = false;
   });
+  document.addEventListener('nova:producto-creado', () => { page = 1; loadList(); loadKpis(); });
   loadList(); loadKpis(); loadFilters();
 })();

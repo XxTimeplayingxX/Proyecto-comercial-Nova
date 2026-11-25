@@ -7,6 +7,29 @@ namespace Nova.Controllers;
 [Route("api/productos")]
 public sealed class ProductosController(SupabaseCatalogoService catalogo) : CatalogoControllerBase
 {
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Crear([FromBody] CrearProductoInput input, CancellationToken ct) => ConsultarAsync(async () =>
+    {
+        try
+        {
+            var id = await catalogo.CrearAsync(input, ct);
+            return Created($"/api/productos/{id}", new { id });
+        }
+        catch (SupabaseCatalogoException ex) when (ex.Code == "23505")
+        {
+            return Problem(statusCode: 409, title: "El código SKU ya está registrado. Usa otro código.");
+        }
+        catch (SupabaseCatalogoException ex) when (ex.Code is "23503" or "23514" || ex.Status == System.Net.HttpStatusCode.BadRequest)
+        {
+            return Problem(statusCode: 400, title: "Revisa los datos del producto y selecciona una marca y categoría válidas.");
+        }
+        catch (SupabaseCatalogoException ex) when (ex.Status == System.Net.HttpStatusCode.Forbidden)
+        {
+            return Problem(statusCode: 403, title: "Solo un administrador con perfil activo puede crear productos.");
+        }
+    });
+
     [HttpGet]
     public Task<IActionResult> Listar([FromQuery] string? buscar, [FromQuery] long? marca,
         [FromQuery] long? categoria, [FromQuery] string? estado, [FromQuery] int pagina = 1,

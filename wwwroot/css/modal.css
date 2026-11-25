@@ -1,0 +1,22 @@
+.nova-modal { width: min(51rem, calc(100% - 2rem)); max-height: calc(100dvh - 3rem); padding: 0; border: 1px solid var(--nova-border); border-radius: 1rem; color: #0f172a; background: #fff; box-shadow: 0 24px 80px #0f172a33; }
+.nova-modal::backdrop { background: #0f172a80; backdrop-filter: blur(3px); }
+.nova-modal[open] { display: flex; flex-direction: column; }
+.nova-modal__header { display: flex; flex: none; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--nova-border); }
+.nova-modal__eyebrow { margin: 0 0 .5rem !important; color: var(--nova-blue-dark) !important; font-size: .68rem !important; font-weight: 600; }
+.nova-modal__header h2 { margin: 0 0 .4rem; font-size: 1.5rem; letter-spacing: -.04em; font-weight: 650; }
+.nova-modal__header p { margin: 0; color: var(--nova-muted); font-size: .78rem; line-height: 1.6; }
+.nova-modal__close { flex: none; width: 2rem; height: 2rem; border: 0; border-radius: .45rem; color: var(--nova-blue-dark); background: #eef0ff; font-size: 1.4rem; cursor: pointer; }
+.nova-modal__body { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+.nova-modal__footer { display: flex; flex: none; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.75rem; border-top: 1px solid var(--nova-border); background: #fff; font-size: .7rem; color: var(--nova-muted); }
+.nova-modal__footer > div { display: flex; gap: .6rem; }
+.nova-modal :is(button, input, select, textarea):focus-visible { outline: 2px solid var(--nova-blue); outline-offset: 3px; }
+.nova-modal button { cursor: pointer; }
+.nova-modal button:disabled { cursor: wait; opacity: .55; }
+body:has(dialog[open]) { overflow: hidden; }
+.required { color: #b42320; }
+@media (max-width: 600px) {
+  .nova-modal { width: calc(100% - 1rem); max-height: calc(100dvh - 1rem); }
+  .nova-modal__header { padding: 1.1rem; }
+  .nova-modal__footer { padding: 1rem; flex-wrap: wrap; }
+  .nova-modal__footer > div { margin-left: auto; }
+}

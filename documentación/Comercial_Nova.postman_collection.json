@@ -339,7 +339,7 @@
           "name": "Crear producto",
           "request": {
             "method": "POST",
-            "description": "",
+            "description": "Requiere perfil administrador activo (RLS) y JWT de usuario. Obligatorios: category_id, brand_id, sku, name y price > 0. minimum_stock >= 0 (default 2). Opcionales verificados en esquema: description, image_path e is_active (default true). No enviar stock: inicia en cero y se modifica mediante RPC adjust_stock. SKU único. Prefer: return=representation devuelve las filas creadas. La pantalla de Nova admite descripción de hasta 250 caracteres y una URL HTTPS de imagen; la carga a Storage sigue pendiente.",
             "header": [
               {
                 "key": "apikey",

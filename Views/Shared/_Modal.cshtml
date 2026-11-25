@@ -1,0 +1,16 @@
+@model ModalOptions
+<dialog id="@Model.Id" class="nova-modal" aria-labelledby="@(Model.Id)-titulo" aria-describedby="@(Model.Id)-descripcion" data-modal>
+    <header class="nova-modal__header">
+        <div><p class="nova-modal__eyebrow">@Model.Eyebrow</p><h2 id="@(Model.Id)-titulo">@Model.Title</h2><p id="@(Model.Id)-descripcion">@Model.Description</p></div>
+        <button type="button" class="nova-modal__close" data-modal-close aria-label="Cerrar ventana">×</button>
+    </header>
+    <div class="nova-modal__body"><partial name="@Model.ContentPartial" /></div>
+    <footer class="nova-modal__footer">
+        <span><span class="required">*</span> Campos obligatorios</span>
+        <div><button type="button" class="catalogo__secondary" data-modal-close>Cancelar</button>
+        @if (Model.FormId is not null)
+        {
+            <button type="submit" form="@Model.FormId" class="catalogo__primary" data-modal-submit>@Model.SubmitText</button>
+        }</div>
+    </footer>
+</dialog>
