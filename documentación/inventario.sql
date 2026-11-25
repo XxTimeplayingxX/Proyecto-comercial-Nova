@@ -1,4 +1,4 @@
--- Propuesta pendiente de despliegue en Supabase.
+-- Aplicado en Supabase mediante migración nova_inventory_catalog_read_api; verificado por SQL el 2026-11-25.
 begin;
 create or replace function public.get_inventory_summary()
 returns jsonb language sql stable security invoker set search_path = '' as $$
@@ -19,4 +19,4 @@ revoke all on public.vw_product_catalog from public,anon,authenticated;
 grant select on public.vw_product_catalog to authenticated;
 notify pgrst,'reload schema';
 commit;
--- Verificar con usuario autenticado y perfil activo.
+-- Permisos SQL verificados; prueba HTTP con JWT de perfil activo pendiente.
