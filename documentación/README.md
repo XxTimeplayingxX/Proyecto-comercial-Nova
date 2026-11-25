@@ -45,12 +45,18 @@ Escrituras solo con datos de prueba. No modificar stock directamente.
 Filtros: brand_id=eq.1, category_id=eq.1, or=(name.ilike.*PS5*,sku.ilike.*PS5*), stock=gt.0, stock=eq.0, is_active=eq.true.
 Paginación limit/offset, orden id.asc, total en Content-Range con Prefer: count=exact. stock>0 incluye stock bajo.
 
-## Ampliación propuesta (pendiente de despliegue)
-- GET /rest/v1/rpc/get_inventory_summary: total_products,available_products,low_stock_products,out_of_stock_products. Valores observados previamente: 10,7,2,1.
-- GET /rest/v1/vw_product_catalog: id,sku,name,description,brand_id,brand_name,category_id,category_name,price,stock,minimum_stock,image_path,is_active,stock_status.
-- Estados: inactive, out_of_stock (0), low_stock (positivo hasta mínimo), available (superior al mínimo).
-- Filtrar stock_status=eq.low_stock. KPI globales del catálogo activo, no cambian con filtros. La vista debe usar security_invoker.
-- No consumir hasta desplegar y probar.
+## Pantalla Productos — desplegada en Supabase
+
+Consulta comparativa SQL / REST, cURL y resultados: [Productos.md](Productos.md). Consultas ejecutables: [productos_consultas.sql](productos_consultas.sql). DDL aplicado: [inventario.sql](inventario.sql).
+
+- GET o POST /rest/v1/rpc/get_inventory_summary: KPI globales del catálogo activo.
+- GET /rest/v1/vw_product_catalog: listado, filtros combinables, detalle por ID y estado calculado.
+- GET /rest/v1/brands y /categories: selectores activos.
+- Verificado mediante SQL el 2026-11-25: 10 productos, 7 disponibles, 2 con stock bajo, 1 agotado; 9 marcas y 8 categorías.
+- Permisos SQL verificados: authenticated puede consultar vista y ejecutar RPC, anon no; vista security_invoker.
+- Pruebas HTTP con JWT real pendientes. No se modificaron productos ni existencias.
+- KPI globales no cambian con filtros; el listado usa limit/offset y Prefer: count=exact.
+- Storage e imágenes pendientes; image_path puede ser null.
 
 ## Mantenimiento
 Actualizar esta documentación y colección Postman junto a cada cambio de API. Distinguir propuesta, despliegue y prueba. No guardar HTML separados por consulta. Mantener controladores MVC delgados; token de usuario en servidor, no en JavaScript.
