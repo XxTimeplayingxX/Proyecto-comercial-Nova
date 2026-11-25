@@ -2,7 +2,7 @@
   "info": {
     "name": "Comercial Nova — API versionada",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "Configurar credenciales locales. No compartir tokens ni exportar valores sensibles. Las escrituras modifican datos; no ejecutar toda la colección en bloque. Carpeta Propuestas no desplegada."
+    "description": "Configurar credenciales locales. No compartir tokens ni exportar valores sensibles. Las escrituras modifican datos; no ejecutar toda la colección en bloque. Pantalla Productos desplegada y verificada por SQL; HTTP autenticado pendiente."
   },
   "variable": [
     {
@@ -1071,13 +1071,12 @@
       ]
     },
     {
-      "name": "Propuestas — NO desplegadas",
+      "name": "Pantalla Productos — SQL verificado",
       "item": [
         {
           "name": "KPI inventario",
           "request": {
-            "method": "POST",
-            "description": "Pendiente de aplicar inventario.sql",
+            "method": "GET",
             "header": [
               {
                 "key": "apikey",
@@ -1086,29 +1085,16 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{access_token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "url": "{{base_url}}/rest/v1/rpc/get_inventory_summary",
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
           }
         },
         {
-          "name": "Catálogo",
+          "name": "Listado paginado",
           "request": {
             "method": "GET",
-            "description": "Pendiente",
             "header": [
               {
                 "key": "apikey",
@@ -1123,14 +1109,194 @@
                 "value": "count=exact"
               }
             ],
-            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&order=id.asc&limit=10&offset=0"
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&order=id.asc&limit=10&offset=0",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
           }
         },
         {
-          "name": "Stock bajo",
+          "name": "Marcas activas",
           "request": {
             "method": "GET",
-            "description": "Pendiente",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/brands?select=id,name&is_active=eq.true&order=name.asc",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
+          }
+        },
+        {
+          "name": "Categorías activas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/categories?select=id,name&is_active=eq.true&order=name.asc",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
+          }
+        },
+        {
+          "name": "Detalle por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?id=eq.{{product_id}}",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
+          }
+        },
+        {
+          "name": "Por marca",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&brand_id=eq.{{brand_id}}&order=id.asc",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
+          }
+        },
+        {
+          "name": "Por categoría",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&category_id=eq.{{category_id}}&order=id.asc",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
+          }
+        },
+        {
+          "name": "Buscar nombre o SKU",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&or=(name.ilike.*PS5*,sku.ilike.*PS5*)&order=id.asc",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
+          }
+        },
+        {
+          "name": "available",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&stock_status=eq.available&order=id.asc",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
+          }
+        },
+        {
+          "name": "low_stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&stock_status=eq.low_stock&order=id.asc",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
+          }
+        },
+        {
+          "name": "out_of_stock",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&stock_status=eq.out_of_stock&order=id.asc",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
+          }
+        },
+        {
+          "name": "Filtros combinados",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&brand_id=eq.1&category_id=eq.3&stock_status=eq.available&order=id.asc",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
+          }
+        },
+        {
+          "name": "Segunda página",
+          "request": {
+            "method": "GET",
             "header": [
               {
                 "key": "apikey",
@@ -1145,7 +1311,8 @@
                 "value": "count=exact"
               }
             ],
-            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&stock_status=eq.low_stock&order=id.asc&limit=10&offset=0"
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&order=id.asc&limit=5&offset=5",
+            "description": "Desplegado; verificado por SQL. Prueba HTTP autenticada pendiente. Ver Productos.md."
           }
         }
       ]
