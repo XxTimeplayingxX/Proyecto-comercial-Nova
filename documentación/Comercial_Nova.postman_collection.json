@@ -1,0 +1,1154 @@
+{
+  "info": {
+    "name": "Comercial Nova — API versionada",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Configurar credenciales locales. No compartir tokens ni exportar valores sensibles. Las escrituras modifican datos; no ejecutar toda la colección en bloque. Carpeta Propuestas no desplegada."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://eyxqkniyyctdzxlzslcb.supabase.co"
+    },
+    {
+      "key": "api_key",
+      "value": "sb_publishable_xQotZnOhNRdR_GuwT5zPEQ_M6ocUILb"
+    },
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "product_id",
+      "value": "1"
+    },
+    {
+      "key": "brand_id",
+      "value": "1"
+    },
+    {
+      "key": "category_id",
+      "value": "1"
+    },
+    {
+      "key": "customer_id",
+      "value": "1"
+    },
+    {
+      "key": "profile_id",
+      "value": ""
+    },
+    {
+      "key": "sale_id",
+      "value": "1"
+    },
+    {
+      "key": "request_id",
+      "value": "550e8400-e29b-41d4-a716-446655440000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Iniciar sesión",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/auth/v1/token?grant_type=password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  " const data = pm.response.json();",
+                  " pm.collectionVariables.set('access_token', data.access_token);",
+                  " pm.collectionVariables.set('refresh_token', data.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Renovar token",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/auth/v1/token?grant_type=refresh_token",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  " const data = pm.response.json();",
+                  " pm.collectionVariables.set('access_token', data.access_token);",
+                  " pm.collectionVariables.set('refresh_token', data.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Usuario actual",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/auth/v1/user"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Productos",
+      "item": [
+        {
+          "name": "Listar paginado",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Prefer",
+                "value": "count=exact"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?select=*,brands(id,name),categories(id,name)&is_active=eq.true&order=id.asc&limit=10&offset=0"
+          }
+        },
+        {
+          "name": "Por ID",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?id=eq.{{product_id}}"
+          }
+        },
+        {
+          "name": "Por marca",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?brand_id=eq.{{brand_id}}"
+          }
+        },
+        {
+          "name": "Por categoría",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?category_id=eq.{{category_id}}"
+          }
+        },
+        {
+          "name": "Buscar nombre o SKU",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?or=(name.ilike.*PS5*,sku.ilike.*PS5*)"
+          }
+        },
+        {
+          "name": "Buscar nombre",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?name=ilike.*PlayStation*"
+          }
+        },
+        {
+          "name": "Buscar SKU",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?sku=eq.PS5-001"
+          }
+        },
+        {
+          "name": "Con existencias",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?stock=gt.0&is_active=eq.true"
+          }
+        },
+        {
+          "name": "Agotados",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?stock=eq.0&is_active=eq.true"
+          }
+        },
+        {
+          "name": "Crear producto",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_id\": 1,\n  \"brand_id\": 1,\n  \"sku\": \"TEST-001\",\n  \"name\": \"Prueba\",\n  \"price\": 10,\n  \"minimum_stock\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Editar producto",
+          "request": {
+            "method": "PATCH",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?id=eq.{{product_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 550\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Desactivar producto",
+          "request": {
+            "method": "PATCH",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/products?id=eq.{{product_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "brands",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/brands"
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/brands",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Editar",
+          "request": {
+            "method": "PATCH",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/brands?id=eq.{{brand_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "categories",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/categories"
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/categories",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Editar",
+          "request": {
+            "method": "PATCH",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/categories?id=eq.{{category_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "customers",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/customers"
+          }
+        },
+        {
+          "name": "Crear",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/customers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Editar",
+          "request": {
+            "method": "PATCH",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/customers?id=eq.{{customer_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cliente actualizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vendedores",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/profiles"
+          }
+        },
+        {
+          "name": "Editar",
+          "request": {
+            "method": "PATCH",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Prefer",
+                "value": "return=representation"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/profiles?id=eq.{{profile_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Nombre\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ventas",
+      "item": [
+        {
+          "name": "Listar",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/sales?order=created_at.desc"
+          }
+        },
+        {
+          "name": "Detalle",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/sales?id=eq.{{sale_id}}&select=*,sale_details(*)"
+          }
+        },
+        {
+          "name": "Detalles",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/sale_details?sale_id=eq.{{sale_id}}"
+          }
+        },
+        {
+          "name": "Registrar",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/rpc/register_sale",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_request_id\": \"{{request_id}}\",\n  \"p_customer_id\": null,\n  \"p_items\": [\n    {\n      \"product_id\": 1,\n      \"quantity\": 1\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Ventas por vendedor",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/sales?seller_id=eq.{{profile_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventario",
+      "item": [
+        {
+          "name": "Movimientos",
+          "request": {
+            "method": "GET",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/stock_movements?order=created_at.desc"
+          }
+        },
+        {
+          "name": "Entrada",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/rpc/adjust_stock",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_product_id\": 1,\n  \"p_movement_type\": \"entry\",\n  \"p_quantity\": 1,\n  \"p_reason\": \"Prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Salida",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/rpc/adjust_stock",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_product_id\": 1,\n  \"p_movement_type\": \"exit\",\n  \"p_quantity\": 1,\n  \"p_reason\": \"Prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "get_dashboard_summary",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/rpc/get_dashboard_summary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_from\": \"2026-11-01T00:00:00-05:00\",\n  \"p_to\": \"2026-12-01T00:00:00-05:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "get_top_products",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/rpc/get_top_products",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_from\": \"2026-11-01T00:00:00-05:00\",\n  \"p_to\": \"2026-12-01T00:00:00-05:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "get_seller_statistics",
+          "request": {
+            "method": "POST",
+            "description": "",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/rpc/get_seller_statistics",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_from\": \"2026-11-01T00:00:00-05:00\",\n  \"p_to\": \"2026-12-01T00:00:00-05:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Propuestas — NO desplegadas",
+      "item": [
+        {
+          "name": "KPI inventario",
+          "request": {
+            "method": "POST",
+            "description": "Pendiente de aplicar inventario.sql",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/rpc/get_inventory_summary",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Catálogo",
+          "request": {
+            "method": "GET",
+            "description": "Pendiente",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Prefer",
+                "value": "count=exact"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&order=id.asc&limit=10&offset=0"
+          }
+        },
+        {
+          "name": "Stock bajo",
+          "request": {
+            "method": "GET",
+            "description": "Pendiente",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Prefer",
+                "value": "count=exact"
+              }
+            ],
+            "url": "{{base_url}}/rest/v1/vw_product_catalog?is_active=eq.true&stock_status=eq.low_stock&order=id.asc&limit=10&offset=0"
+          }
+        }
+      ]
+    }
+  ]
+}
