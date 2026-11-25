@@ -1,0 +1,30 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  background: #0b0e16;
+  color: #f4f6ff;
+}
+
+body {
+  margin: 0;
+}
+
+.welcome {
+  box-sizing: border-box;
+  display: grid;
+  min-height: 100svh;
+  padding: 1rem;
+  place-items: center;
+  background:
+    radial-gradient(ellipse at 50% 52%, #233c69 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 10%, #192943 0%, transparent 45%);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2rem, 10vw, 8rem);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  text-align: center;
+}
