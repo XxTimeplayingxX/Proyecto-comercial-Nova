@@ -1,0 +1,9 @@
+@{
+    var page = ViewContext.RouteData.Values["page"] as string;
+}
+<nav class="workspace__nav" aria-label="Menú principal">
+    <a asp-page="/Index" aria-current="@(page == "/Index" ? "page" : null)"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> Dashboard</a>
+    <a asp-page="/Productos" aria-current="@(page == "/Productos" ? "page" : null)"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16v14H4zM3 3h18v4H3zM9 11h6"/></svg> Productos</a>
+    <a asp-page="/Ventas" aria-current="@(page == "/Ventas" ? "page" : null)"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 3h16v18l-4-2-4 2-4-2-4 2zM8 7h8M8 11h8M8 15h4"/></svg> Ventas</a>
+    <a asp-page="/NuestraHistoria" aria-current="@(page == "/NuestraHistoria" ? "page" : null)"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 5h6a3 3 0 0 1 2 1 3 3 0 0 1 2-1h6v15h-6a3 3 0 0 0-2 1 3 3 0 0 0-2-1H4zM12 6v15"/></svg> Nuestra historia</a>
+</nav>

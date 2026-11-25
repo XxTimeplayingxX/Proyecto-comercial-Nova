@@ -1,5 +1,6 @@
 .catalogo__actions { display: flex; flex-wrap: wrap; gap: .6rem; }
 .producto-form { font-size: .78rem; }
+.producto-form__loading { margin: 1rem 1.75rem; padding: .8rem; border-radius: .4rem; background: #eef0ff; color: var(--nova-blue-dark); }
 .producto-form fieldset { min-width: 0; padding: 0; margin: 0; border: 0; }
 .producto-form__section { padding: 1.5rem 1.75rem; }
 .producto-form__section--tinted { background: #f8f9ff; border-top: 1px solid #eef0fa; }
@@ -30,7 +31,13 @@
 .producto-form__image { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px dashed #b6caff; border-radius: .6rem; background: #f5f7ff; }
 .producto-form__image > div { flex: 1; min-width: 0; }
 .producto-form__image small { display: block; margin-top: .4rem; }
+.producto-form__url-label { display: block; margin: .8rem 0 .4rem; color: var(--nova-muted); font-size: .65rem; }
+.producto-form__field input[type=file] { font-size: .7rem; padding: .4rem; }
+.producto-form__field input[type=file]::file-selector-button { margin-right: .7rem; padding: .55rem .7rem; border: 0; border-radius: .3rem; background: #e8edff; color: var(--nova-blue-dark); font: inherit; cursor: pointer; }
 .producto-form__image-icon { color: var(--nova-blue); font-size: 2rem; }
+.producto-form__preview { width: 4.5rem; height: 4.5rem; flex: none; object-fit: contain; border: 1px solid var(--nova-border); border-radius: .4rem; background: #fff; }
+.producto-form__remove { display: block; margin-top: .5rem; padding: .35rem .5rem; border: 1px solid #f5c5c1; border-radius: .3rem; background: #fff; color: #b42320; font-size: .65rem; }
+.producto-form__field input:invalid:not(:placeholder-shown) { border-color: #b42320; }
 .producto-form__currency { display: flex; border: 1px solid var(--nova-border); border-radius: .4rem; background: #fff; overflow: hidden; }
 .producto-form__currency > span { display: grid; place-items: center; padding: .5rem; background: #e8edff; color: var(--nova-blue-dark); font-size: .65rem; }
 .producto-form__currency input { border: 0 !important; border-radius: 0 !important; }

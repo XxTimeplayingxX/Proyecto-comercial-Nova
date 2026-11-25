@@ -1,0 +1,49 @@
+@page "/Ventas"
+@using System.Security.Claims
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@attribute [Microsoft.AspNetCore.Mvc.ResponseCache(NoStore = true, Location = Microsoft.AspNetCore.Mvc.ResponseCacheLocation.None)]
+@{
+    Layout = "_WorkspaceLayout";
+    ViewData["Title"] = "Ventas";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/ventas.css" asp-append-version="true">
+}
+@section Scripts {
+    <script src="~/js/ventas.js" asp-append-version="true" defer></script>
+}
+<div class="pos" id="punto-venta" data-user="@User.FindFirstValue(ClaimTypes.NameIdentifier)">
+    <p class="pos__breadcrumb">Ventas <span>/</span> Nueva venta</p>
+    <header class="pos__heading"><div><div class="pos__title"><h1>Nueva venta</h1><span class="pos__badge">Punto de venta</span></div><p>Selecciona los productos y valida las existencias antes de confirmar tu pedido.</p></div><span class="pos__secure">✓ Registro con control de inventario</span></header>
+    <div class="pos__layout">
+        <section class="pos__catalog" aria-label="Seleccionar productos">
+            <div class="pos__tools">
+                <label class="pos__search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="venta-buscar" type="search" maxlength="120" placeholder="Buscar por nombre o SKU…" aria-label="Buscar productos por nombre o SKU"><kbd>Ctrl K</kbd></label>
+                <div class="pos__categories" id="venta-categorias" role="group" aria-label="Filtrar por categoría"><button type="button" data-category="" aria-pressed="true">Todos</button></div>
+                <p class="pos__hint" id="venta-catalogo-estado" role="status">Consultando productos…</p>
+            </div>
+            <div class="pos__products" id="venta-productos" aria-busy="true"><partial name="_VentaProductoSkeleton" /></div>
+            <div class="pos__empty" id="venta-catalogo-error" role="alert" hidden><p id="venta-catalogo-error-texto"></p><button type="button" class="pos__secondary" id="venta-reintentar">Reintentar búsqueda</button></div>
+            <div class="pos__pagination"><button class="pos__secondary" type="button" id="venta-anterior" disabled>← Anterior</button><span id="venta-pagina">Página 1</span><button class="pos__secondary" type="button" id="venta-siguiente" disabled>Siguiente →</button></div>
+            <p class="pos__catalog-note">Los precios y las existencias se vuelven a consultar al validar. El stock se descuenta al confirmar la venta.</p>
+        </section>
+        <aside class="pos__order" aria-labelledby="pedido-titulo">
+            <header class="pos__order-heading"><h2 id="pedido-titulo"><span aria-hidden="true">▤</span> Resumen del pedido</h2><span class="pos__draft" id="pedido-etapa">Borrador</span></header>
+            <div class="pos__seller"><span class="pos__seller-icon" aria-hidden="true">N</span><div><strong>Vendedor responsable</strong><span>@User.FindFirstValue(ClaimTypes.Email)</span></div></div>
+            <fieldset id="venta-cliente-campos" class="pos__customer">
+                <label for="venta-cliente-buscar">Cliente receptor <span>Opcional</span></label>
+                <input id="venta-cliente-buscar" type="search" maxlength="120" placeholder="Buscar cliente por nombre…" aria-label="Buscar cliente">
+                <select id="venta-cliente" aria-label="Cliente de la venta"><option value="">Consumidor final · Venta rápida</option></select>
+                <small id="venta-cliente-estado" role="status">Puedes registrar la venta sin seleccionar un cliente.</small>
+            </fieldset>
+            <div class="pos__cart-heading"><h3>Artículos cargados</h3><span id="pedido-tipos">0 productos</span></div>
+            <div id="pedido-items" class="pos__cart"><div class="pos__cart-empty"><span aria-hidden="true">＋</span><strong>Tu pedido empieza aquí</strong><p>Agrega productos del catálogo para preparar una venta.</p></div></div>
+            <div class="pos__totals"><div><span>Cantidad de artículos</span><strong id="pedido-unidades">0 unidades</strong></div><div class="pos__grand-total"><span>Total del pedido <small>USD</small></span><strong id="pedido-total">$0.00</strong></div><p id="pedido-precio-nota">Importe estimado. Valida el pedido para consultar los precios actuales.</p></div>
+            <p id="venta-mensaje" class="pos__message" role="status" tabindex="-1" hidden></p>
+            <div id="venta-recibo" class="pos__receipt" role="status" hidden></div>
+            <div class="pos__checkout"><button id="venta-validar" class="pos__secondary" type="button" disabled>✓ Validar pedido</button><button id="venta-confirmar" class="pos__primary" type="button" disabled>Confirmar venta</button><button id="venta-limpiar" class="pos__clear" type="button" disabled>Vaciar carrito</button></div>
+            <p class="pos__checkout-note">La venta se confirma únicamente cuando el servidor devuelve su número de registro.</p>
+        </aside>
+    </div>
+    <form id="venta-seguridad" hidden>@Html.AntiForgeryToken()</form>
+</div>

@@ -87,10 +87,20 @@
     tr.append(text('td', money.format(product.precio), 'numero'));
     tr.append(text('td', `${product.stock} ${product.stock === 1 ? 'unidad' : 'unidades'}`, `numero stock--${product.estado}`));
     const status = document.createElement('td'); status.append(badge(product)); tr.append(status);
-    const action = document.createElement('td');
-    const button = text('button', 'Ver detalle', 'producto__ver'); button.type = 'button';
-    button.setAttribute('aria-label', `Ver detalle de ${product.nombre}`);
-    button.addEventListener('click', () => detail(product.id)); action.append(button); tr.append(action);
+    const action = document.createElement('td'); action.className = 'producto__acciones-celda';
+    const actions = document.createElement('div'); actions.className = 'producto__acciones';
+    const icons = {
+      detalle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+      editar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z"/></svg>'
+    };
+    for (const [kind, label, handler] of [['detalle', 'Ver detalles', () => detail(product.id)], ['editar', 'Editar producto', () => document.dispatchEvent(new CustomEvent('nova:editar-producto', { detail: { id: product.id } }))]]) {
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'producto__accion';
+      button.innerHTML = icons[kind]; // Static SVG only; product data uses text/attributes.
+      button.title = label; button.setAttribute('aria-label', `${label}: ${product.nombre}`);
+      button.addEventListener('click', handler); actions.append(button);
+    }
+    action.append(actions); tr.append(action);
+    ['Producto', 'Marca', 'Categoría', 'Precio', 'Stock disponible', 'Estado', 'Acciones'].forEach((label, index) => { tr.cells[index].dataset.label = label; });
     return tr;
   }
   function notice(id, message) { $(id).textContent = message; $(id).hidden = !message; }
@@ -159,6 +169,7 @@
         dl.append(text('dt', key), text('dd', value));
       }
       $('detalle-contenido').replaceChildren(image(product), badge(product), dl,
+        text('p', product.descripcion || 'Sin descripción disponible.', 'detalle-descripcion'),
         text('p', 'Si el producto no tiene una imagen accesible, se muestra un ícono de referencia.', 'catalogo__footnote'));
     } catch (error) { if (error.name !== 'AbortError') $('detalle-contenido').replaceChildren(text('p', error.message)); }
     finally { if (detailRequest === controller) $('detalle-contenido').setAttribute('aria-busy', 'false'); }
@@ -178,5 +189,6 @@
     $('actualizar').disabled = false;
   });
   document.addEventListener('nova:producto-creado', () => { page = 1; loadList(); loadKpis(); });
+  document.addEventListener('nova:producto-editado', () => { loadList(); loadKpis(); });
   loadList(); loadKpis(); loadFilters();
 })();

@@ -57,22 +57,29 @@ public sealed class SupabaseCatalogoService(IHttpClientFactory clients, IHttpCon
     public Task<List<CatalogoOpcion>> CategoriasAsync(CancellationToken ct, bool activos = false) =>
         LeerAsync<CatalogoOpcion>("categories?select=id,name&order=id.asc" + (activos ? "&is_active=eq.true" : ""), ct);
 
-    public async Task<long> CrearAsync(CrearProductoInput input, CancellationToken ct)
+    public Task<long> CrearAsync(CrearProductoInput input, CancellationToken ct) => GuardarAsync(input, null, ct);
+
+    public Task<long> EditarAsync(long id, CrearProductoInput input, CancellationToken ct) => GuardarAsync(input, id, ct);
+
+    private async Task<long> GuardarAsync(CrearProductoInput input, long? id, CancellationToken ct)
     {
         var token = await accessor.HttpContext!.GetTokenAsync("access_token");
         if (string.IsNullOrEmpty(token)) throw new SupabaseCatalogoException(HttpStatusCode.Unauthorized);
         using var client = clients.CreateClient(SupabaseOptions.SectionName);
-        using var request = new HttpRequestMessage(HttpMethod.Post, "products?select=id")
+        var payload = new Dictionary<string, object?>
         {
-            Content = JsonContent.Create(new
-            {
-                category_id = input.CategoriaId, brand_id = input.MarcaId,
-                sku = input.Sku.Trim(), name = input.Nombre.Trim(), price = input.Precio,
-                minimum_stock = input.StockMinimo, is_active = input.Activo,
-                description = string.IsNullOrWhiteSpace(input.Descripcion) ? null : input.Descripcion.Trim(),
-                image_path = string.IsNullOrWhiteSpace(input.Imagen) ? null : input.Imagen.Trim()
-                // Stock starts at its database default. Changes use inventory RPCs.
-            })
+            ["category_id"] = input.CategoriaId, ["brand_id"] = input.MarcaId,
+            ["name"] = input.Nombre.Trim(), ["price"] = input.Precio,
+            ["minimum_stock"] = input.StockMinimo, ["is_active"] = input.Activo,
+            ["description"] = string.IsNullOrWhiteSpace(input.Descripcion) ? null : input.Descripcion.Trim(),
+            ["image_path"] = string.IsNullOrWhiteSpace(input.Imagen) ? null : input.Imagen.Trim()
+        };
+        // SKU is immutable in this editor; stock changes always use inventory RPCs.
+        if (!id.HasValue) payload["sku"] = input.Sku.Trim();
+        using var request = new HttpRequestMessage(id.HasValue ? HttpMethod.Patch : HttpMethod.Post,
+            id.HasValue ? $"products?id=eq.{id.Value}&select=id" : "products?select=id")
+        {
+            Content = JsonContent.Create(payload)
         };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Headers.Add("Prefer", "return=representation");
@@ -89,8 +96,9 @@ public sealed class SupabaseCatalogoService(IHttpClientFactory clients, IHttpCon
             throw new SupabaseCatalogoException(response.StatusCode, code);
         }
         var rows = await response.Content.ReadFromJsonAsync<List<ProductoCreado>>(ct);
+        if (id.HasValue && rows is { Count: 0 }) throw new SupabaseCatalogoException(HttpStatusCode.NotFound);
         return rows is { Count: 1 } && rows[0].Id > 0 ? rows[0].Id
-            : throw new JsonException("Supabase no devolvió el producto creado.");
+            : throw new JsonException("Supabase no devolvió el producto guardado.");
     }
 
     private sealed record ProductoCreado(long Id);

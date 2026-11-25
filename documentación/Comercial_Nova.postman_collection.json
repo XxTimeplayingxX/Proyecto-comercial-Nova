@@ -5,6 +5,22 @@
     "description": "Configurar credenciales locales. No compartir tokens ni exportar valores sensibles. Las escrituras modifican datos; no ejecutar toda la colección en bloque. Pantalla Productos desplegada y verificada por SQL; HTTP autenticado pendiente."
   },
   "variable": [
+    { "key": "product_image_url", "value": "" },
+    { "key": "storage_object_path", "value": "" },
+    { "key": "storage_user_id", "value": "" },
+    { "key": "storage_object_name", "value": "" },
+    {
+      "key": "venta_request_id",
+      "value": ""
+    },
+    {
+      "key": "nova_base_url",
+      "value": "http://localhost:5180"
+    },
+    {
+      "key": "antiforgery_token",
+      "value": ""
+    },
     {
       "key": "base_url",
       "value": "https://eyxqkniyyctdzxlzslcb.supabase.co"
@@ -59,6 +75,174 @@
     }
   ],
   "item": [
+    {
+      "name": "Storage — imágenes de productos",
+      "description": "Bucket product-images configurado el 2026-11-25: lectura pública, 5 MiB, JPEG/PNG/WebP. Solo admin activo puede cargar dentro de catalogo/{auth.uid()}/. SELECT de metadatos solo admin; no hay UPDATE/DELETE ni upsert. Usar fotografías comerciales no confidenciales. No se cambió el plan. No ejecutar cargas en bloque; los archivos ocupan Storage aunque todavía no estén asociados a un producto. Ver documentación/Storage.md y storage_product_images.sql.",
+      "item": [
+        {
+          "name": "Subir imagen desde Nova (multipart)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "url": "{{nova_base_url}}/api/productos/imagen",
+            "description": "Nueva API local. Requiere cookie Nova.Session, token antifalsificación obtenido de GET /Productos y perfil admin activo. Seleccionar archivo en Body/form-data, campo archivo. No fijar Content-Type manualmente: Postman genera multipart boundary. Archivo 1..5242880 bytes en JPEG/PNG/WebP; se comprueban MIME y firma/estructura básica, no decodificación completa. Se ignora nombre original y genera ruta catalogo/UUID-USUARIO/UUID-NUEVO.ext. 201:{ruta,url}. El evento guarda product_image_url y storage_object_path; enviar esa URL como imagen al crear/editar el producto. La subida no crea ni modifica productos. 400: archivo/tamaño/MIME/firma/antifalsificación; 401: sesión; 403: perfil; 413: petición >6 MB; 502/503: Storage sin confirmación. Sin reintentos automáticos, sobrescritura o borrado. Una respuesta perdida o cancelar el producto después puede dejar un archivo sin referencia.",
+            "body": { "mode": "formdata", "formdata": [{ "key": "archivo", "type": "file", "src": [] }] }
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "if (pm.response.code === 201) {",
+            "  const image = pm.response.json();",
+            "  pm.collectionVariables.set('product_image_url', image.url);",
+            "  pm.collectionVariables.set('storage_object_path', image.ruta);",
+            "  pm.test('URL pública confirmada', () => pm.expect(image.url).to.include('/storage/v1/object/public/product-images/'));",
+            "}"
+          ] } }]
+        },
+        {
+          "name": "Consultar imagen pública subida",
+          "request": {
+            "method": "GET", "header": [], "url": "{{product_image_url}}",
+            "description": "Lectura pública sin JWT ni cookie. Ejecutar después de una carga o configurar product_image_url con URL existente. 200: bytes de imagen; 404 u otro error Storage si la ruta no existe. Quien conoce esta URL puede leer la fotografía. No usar para documentos personales."
+          }
+        },
+        {
+          "name": "Subida directa Storage (PNG de prueba, admin)",
+          "event": [{ "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+            "if (!pm.collectionVariables.get('storage_object_name')) pm.collectionVariables.set('storage_object_name', pm.variables.replaceIn('{{$guid}}') + '.png');"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "apikey", "value": "{{api_key}}" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "image/png" }, { "key": "x-upsert", "value": "false" }],
+            "url": "{{base_url}}/storage/v1/object/product-images/catalogo/{{storage_user_id}}/{{storage_object_name}}",
+            "description": "Storage API real, distinta de Nova. Configurar storage_user_id con el UUID del usuario de ese JWT y seleccionar un PNG <=5 MB en Body/binary. La política exige admin activo y carpeta del mismo usuario. Reutilizar nombre existente no sobrescribe: x-upsert=false y sin política UPDATE. Una carga correcta devuelve respuesta 2xx con metadatos de Storage; lectura pública en {{base_url}}/storage/v1/object/public/product-images/catalogo/{{storage_user_id}}/{{storage_object_name}}. Errores de sesión/permisos 401/403 (algunas respuestas legacy los incluyen en el cuerpo con HTTP400), tamaño/MIME 400/413 y objeto existente 409. Usar preferentemente la API local, que valida contenido y genera el nombre. No hay endpoints locales DELETE ni actualización de archivo en esta entrega.",
+            "body": { "mode": "file", "file": { "src": "" } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Nova local — ventas",
+      "description": "Pantalla /Ventas y APIs locales con cookie Nova.Session. Reutilizar el login de la carpeta Nova local — catálogo; obtener después el token antifalsificación de /Ventas. Solo usar ventas de prueba autorizadas. No ejecutar registro masivamente: descuenta stock real. Las llamadas de comprobación durante implementación usaron un host aislado con Supabase simulado. Las APIs locales no reciben claves Supabase ni JWT en JavaScript.",
+      "item": [
+        {
+          "name": "Obtener pantalla de venta y antifalsificación",
+          "request": {
+            "method": "GET", "header": [], "url": "{{nova_base_url}}/Ventas",
+            "description": "Cookie Nova.Session. 200 HTML de nueva venta; sin sesión redirige a /Login. El formulario venta-seguridad entrega __RequestVerificationToken para POST validar/registrar en la misma sesión. Incluye ocho tarjetas skeleton al renderizar y navegación responsive. El evento guarda el token local; no exportarlo."
+          },
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "const html = pm.response.text();",
+            "const match = html.match(/name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"/);",
+            "if (match) pm.collectionVariables.set('antiforgery_token', match[1]);",
+            "pm.test('Pantalla de venta autenticada', () => pm.expect(html).to.include('id=\"punto-venta\"'));"
+          ] } }]
+        },
+        {
+          "name": "Buscar productos para una venta",
+          "request": {
+            "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{nova_base_url}}/api/ventas/productos?buscar=&pagina=1",
+            "description": "Cookie Nova.Session. buscar opcional (hasta 120 caracteres), nombre o SKU; categoria opcional (ID positivo); pagina 1..1000000. Consulta productos activos en Supabase, orden name.asc,id.asc, ocho por página y una fila extra para hayMas. Incluye agotados para mostrarlos deshabilitados; no excluye stock bajo. 200:{items:[ProductoDto],pagina,hayMas}. ProductoDto incluye id,nombre,sku,precio,stock,stockMinimo,activo,estado,imagen,marca,categoria,descripcion,marcaId,categoriaId. 400 filtros; 401 sesión; 403 permisos; 502/503 externo. No busca códigos de barras: no hay campo documentado."
+          }
+        },
+        {
+          "name": "Buscar clientes de la venta",
+          "request": {
+            "method": "GET", "header": [], "url": "{{nova_base_url}}/api/ventas/clientes?buscar=",
+            "description": "Cookie Nova.Session. buscar opcional hasta 120 caracteres por nombre. Devuelve hasta 20 filas visibles por RLS, ordenadas por nombre/ID. 200:[{id,name}]. No devuelve correos ni documentos. No seleccionar cliente equivale a clienteId:null (consumidor final). 400 longitud; 401 sesión; 403 permisos; 502/503 externo. No crea clientes."
+          }
+        },
+        {
+          "name": "Validar pedido sin registrar ni descontar stock",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "url": "{{nova_base_url}}/api/ventas/validar",
+            "description": "Cookie Nova.Session y antifalsificación. clienteId opcional positivo o null; items obligatorio, 1..100 productos distintos, productoId positivo y cantidad entera positiva. Consulta productos/precios/stock y visibilidad del cliente con JWT del usuario. Ignora precios/totales enviados por el navegador. 200:{valida:true,total,items:[{productoId,nombre,sku,cantidad,stock,precio,subtotal,imagen}],errores:[]}. 409 usa la misma estructura con valida:false y errores por stock, producto inactivo/no visible o cliente no visible. No reserva unidades y no garantiza precios inmutables hasta confirmar. 400 campos/duplicados/antifalsificación; 401 sesión; 403 permisos; 502/503 externo.",
+            "body": { "mode": "raw", "raw": "{\n  \"clienteId\": null,\n  \"items\": [\n    { \"productoId\": {{product_id}}, \"cantidad\": 1 }\n  ]\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Confirmar venta (escritura, idempotente)",
+          "event": [{ "listen": "prerequest", "script": { "type": "text/javascript", "exec": [
+            "if (!pm.collectionVariables.get('venta_request_id')) pm.collectionVariables.set('venta_request_id', pm.variables.replaceIn('{{$guid}}'));"
+          ] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "url": "{{nova_base_url}}/api/ventas",
+            "description": "ESCRITURA REAL. Cookie Nova.Session, antifalsificación, perfil admin/seller activo. Mismo cuerpo que validar más requestId UUID no vacío. Envía solo p_request_id,p_customer_id,p_items a rpc/register_sale. La base toma precios, descuenta stock y registra venta/detalle/movimientos en una transacción. 200:{saleId,total,replayed}; replayed=true recupera una operación ya confirmada sin duplicarla. Conservar exactamente UUID, cliente y artículos al reintentar tras timeout/error 5xx: NO generar otro UUID para el mismo pedido. El prerequest genera venta_request_id solo si está vacío. Para una venta nueva, vaciar esa variable explícitamente después de resolver la anterior. 409 code INSUFFICIENT_STOCK: revisar cantidades/revalidar; 409 REQUEST_ID_REUSED: UUID usado con otro cuerpo, requiere revisar la operación. 400 datos/referencias/antifalsificación; 401 sesión; 403 perfil; 502/503 resultado no confirmado. No revalidar stock antes de un replay: la venta anterior pudo descontarlo. El total devuelto por el RPC es el definitivo; no hay descuentos, impuestos desglosados, cobros bancarios ni factura fiscal en este contrato.",
+            "body": { "mode": "raw", "raw": "{\n  \"requestId\": \"{{venta_request_id}}\",\n  \"clienteId\": null,\n  \"items\": [\n    { \"productoId\": {{product_id}}, \"cantidad\": 1 }\n  ]\n}", "options": { "raw": { "language": "json" } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Nova local — catálogo",
+      "description": "API de la aplicación ASP.NET, distinta de la Data API de Supabase. Iniciar Nova. Ejecutar Obtener formulario de login, enviar Login local con email/password propios y obtener el formulario de productos. Postman debe mantener las cookies y seguir redirecciones; los eventos guardan el token antifalsificación del HTML en antiforgery_token. No exportar cookies ni tokens. Las escrituras reales requieren administrador activo y deben usar productos de prueba. La edición de Nova recibe el formulario completo; el PATCH de Supabase puede ser parcial. Ver documentación/Productos.md.",
+      "item": [
+        {
+          "name": "1. Obtener formulario de login local",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "const match = pm.response.text().match(/name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"/);",
+            "if (match) pm.collectionVariables.set('antiforgery_token', match[1]);",
+            "pm.test('Formulario disponible', () => pm.expect(pm.response.code).to.eql(200));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{nova_base_url}}/Login", "description": "GET público. Devuelve HTML y cookie de antifalsificación. El evento extrae __RequestVerificationToken. Si ya hay sesión puede redirigir a bienvenida; para escribir refrescar el token con GET /Productos." }
+        },
+        {
+          "name": "2. Login local (cookie de Nova)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "url": "{{nova_base_url}}/Login",
+            "description": "Envía el formulario con el token y cookie obtenidos en el paso anterior. Login válido crea Nova.Session y redirige a bienvenida. Un formulario rechazado puede responder HTML 200 con aviso; eso no confirma sesión. Después ejecutar GET /Productos para obtener el token asociado a la identidad autenticada. No introducir JWT en estas rutas locales.",
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "Email", "value": "{{email}}", "type": "text" },
+              { "key": "Password", "value": "{{password}}", "type": "text" },
+              { "key": "RememberMe", "value": "false", "type": "text" },
+              { "key": "__RequestVerificationToken", "value": "{{antiforgery_token}}", "type": "text" }
+            ] }
+          }
+        },
+        {
+          "name": "3. Obtener formulario de productos y token",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
+            "const match = pm.response.text().match(/name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"/);",
+            "if (match) pm.collectionVariables.set('antiforgery_token', match[1]);",
+            "pm.test('Catálogo autenticado', () => pm.expect(pm.response.text()).to.include('id=\"producto-form\"'));"
+          ] } }],
+          "request": { "method": "GET", "header": [], "url": "{{nova_base_url}}/Productos", "description": "Requiere Nova.Session en el cookie jar de Postman. Devuelve el catálogo y modal Razor con el token para RequestVerificationToken en POST/PATCH. Sin sesión redirige a /Login. Obtener el token después de autenticar; el token previo al login no debe reutilizarse con otra identidad." }
+        },
+        {
+          "name": "Detalle local para edición",
+          "request": { "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }], "url": "{{nova_base_url}}/api/productos/{{product_id}}", "description": "Cookie Nova.Session. 200: id,nombre,sku,precio,stock,stockMinimo,activo,estado,imagen,marca,categoria,descripcion,marcaId,categoriaId. 401: sesión ausente/vencida; 403: permisos; 404: producto inexistente o no visible; 502/503: servicio externo. Marca/categoría pueden ser null. Descripción e IDs permiten precargar el editor." }
+        },
+        {
+          "name": "Selectores activos locales",
+          "request": { "method": "GET", "header": [], "url": "{{nova_base_url}}/api/productos/filtros?activos=true", "description": "Cookie Nova.Session. activos=true limita marcas y categorías a filas activas. Sin parámetro conserva el comportamiento de filtros del catálogo. 200: {marcas:[{id,name}],categorias:[{id,name}]}; 401/403/502/503 según sesión/permisos/disponibilidad." }
+        },
+        {
+          "name": "Crear producto desde Nova",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "url": "{{nova_base_url}}/api/productos",
+            "description": "Requiere cookie Nova.Session, token antifalsificación de esa sesión y perfil admin activo. 201: {id} y Location del detalle. Obligatorios: nombre 3-200 caracteres, sku 1-80, categoriaId/marcaId positivos, precio >0 con hasta 2 decimales. stockMinimo entero >=0 (default 2); activo default true; descripcion opcional <=250; imagen opcional <=2048, HTTPS o ruta local absoluta segura. No enviar stock. 400: validación/antifalsificación/referencias; 401: sesión; 403: permisos; 409: SKU repetido; 502/503: externo. No reintentar automáticamente; si se pierde la conexión comprobar el catálogo por SKU.",
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Producto de prueba\",\n  \"sku\": \"TEST-NOVA-001\",\n  \"categoriaId\": 1,\n  \"marcaId\": 1,\n  \"precio\": 10.25,\n  \"stockMinimo\": 2,\n  \"activo\": true,\n  \"descripcion\": \"Descripción opcional\",\n  \"imagen\": null\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Editar producto desde Nova",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "url": "{{nova_base_url}}/api/productos/{{product_id}}",
+            "description": "API local nueva. Requiere cookie Nova.Session, antifalsificación y administrador activo. product_id debe ser positivo. Recibe el formulario completo con las validaciones del alta; tomar valores actuales de GET detalle antes de editar. sku se requiere por DTO compartido, pero se ignora en el PATCH saliente: permanece inmutable; stock nunca se escribe. imagen=null desvincula imagen sin borrar Storage. Envía PATCH /rest/v1/products?id=eq.ID&select=id con JWT del usuario y Prefer:return=representation. 200:{id}; 400: campos/antifalsificación/referencias; 401: sesión; 403: permisos; 404: ninguna fila actualizada (inexistente o no autorizada); 409: conflicto; 502/503: externo. No hay reintentos automáticos ni API local de ajustes o carga de imágenes en esta entrega.",
+            "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Producto actualizado\",\n  \"sku\": \"SKU-ACTUAL\",\n  \"categoriaId\": 1,\n  \"marcaId\": 1,\n  \"precio\": 499.99,\n  \"stockMinimo\": 5,\n  \"activo\": true,\n  \"descripcion\": \"Descripción actualizada\",\n  \"imagen\": null\n}", "options": { "raw": { "language": "json" } } }
+          }
+        }
+      ]
+    },
     {
       "name": "Autenticación",
       "item": [
@@ -374,7 +558,7 @@
           "name": "Editar producto",
           "request": {
             "method": "PATCH",
-            "description": "",
+            "description": "Data API de Supabase (no API local): JWT de usuario, apikey y administrador activo por RLS. PATCH /products?id=eq.ID permite campos comerciales parciales; ejemplo cambia precio. Otros campos usados por Nova: category_id,brand_id,name,description,minimum_stock,is_active,image_path. Prefer:return=representation devuelve array; [] no confirma una actualización. No modificar stock directamente: usar adjust_stock. El editor de Nova no modifica sku y usa PATCH /api/productos/ID con cookie y antifalsificación, documentado en la carpeta Nova local. Fallos de permisos 401/403, referencias o checks 400 y conflictos 409 pueden propagarse desde PostgREST.",
             "header": [
               {
                 "key": "apikey",
@@ -840,7 +1024,7 @@
           "name": "Registrar",
           "request": {
             "method": "POST",
-            "description": "",
+            "description": "RPC existente verificado por lectura de su definición el 2026-11-25. Requiere JWT de admin/seller activo. p_request_id UUID, p_customer_id bigint o null, p_items array de 1..100 {product_id,quantity>0}. La implementación agrupa productos, bloquea por UUID, usa precios del catálogo, descuenta existencias y escribe sales/sale_details/stock_movements en una transacción. Retorna objeto {sale_id,total,replayed}. Mismo UUID y mismo pedido recupera el resultado con replayed:true; otro cuerpo retorna HTTP409 REQUEST_ID_REUSED. Stock insuficiente/inactivo/inexistente retorna HTTP409 INSUFFICIENT_STOCK y revierte la operación. Perfil no autorizado:403 ACCESS_DENIED. No enviar precios del navegador ni actualizar stock directamente. No se ejecutó este RPC contra datos reales en la implementación de la pantalla; pruebas en host simulado. Nova lo expone mediante POST /api/ventas (cookie+antifalsificación), documentado en la carpeta Nova local — ventas.",
             "header": [
               {
                 "key": "apikey",

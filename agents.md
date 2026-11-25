@@ -10,7 +10,7 @@ Distinguir siempre lo implementado en código, lo documentado como desplegado, l
 
 ## Qué estamos construyendo
 
-Comercial Nova es un prototipo universitario para un comercio de tecnología. La base actual permite iniciar sesión y consultar el catálogo e inventario. La documentación de la API contempla también clientes, ventas, movimientos de stock y estadísticas; su existencia en la API no significa que tengan una pantalla implementada.
+Comercial Nova es un prototipo universitario para un comercio de tecnología. La base actual permite iniciar sesión, consultar y gestionar productos, y preparar, validar y registrar ventas en `/Ventas`. La documentación de la API contempla también clientes, movimientos de stock y estadísticas; no asumir que cada contrato tiene una pantalla de administración implementada.
 
 ## Arquitectura y responsabilidades
 
@@ -28,6 +28,7 @@ Flujo del catálogo: navegador → `/api/productos...` en Nova → servicio HTTP
 
 ## Frontend actual
 
+- `Pages/Ventas.cshtml`: nueva venta con búsqueda/categorías, ocho skeletons por carga, carrito, cliente opcional, validación y confirmación. Estilos y lógica en `ventas.css` y `ventas.js`. Navegación responsive compartida en `_WorkspaceNav` y `workspace.js`; drawer modal hasta 900 px. Ver `documentación/Ventas.md`.
 - `Views/Login/Index.cshtml`: formulario de inicio de sesión; recursos en `wwwroot/css/login.css` y `wwwroot/js/login.js`.
 - `Pages/Index.cshtml`: bienvenida; el menú la presenta como Dashboard. No asumir que ya integra los indicadores de ventas.
 - `Pages/Productos.cshtml`: catálogo con búsqueda por nombre o SKU, filtros por marca, categoría y estado, paginación, actualización manual, indicadores y diálogo de detalle. Lógica en `wwwroot/js/productos.js` y estilos en `wwwroot/css/productos.css`.
@@ -40,6 +41,8 @@ Mantener estados de carga, vacío y error recuperable. No inventar productos, fo
 
 ## Backend web actual
 
+- `Controllers/VentasController.cs`, `Dtos/VentaDto.cs`, `Infrastructure/SupabaseVentasService.cs`: búsqueda paginada para venta, clientes, validación sin escritura y registro por RPC. Nuevas APIs `GET /api/ventas/productos`, `GET /api/ventas/clientes`, `POST /api/ventas/validar`, `POST /api/ventas`. Sesión en todas y antifalsificación en POST; no aceptar precios ni vendedor del navegador.
+- El RPC `register_sale` ya existente toma precios, descuenta stock y escribe venta/detalle/movimientos de forma transaccional. Guardar UUID y pedido exacto antes de enviar; ante resultado incierto conservarlos en sessionStorage por usuario y reintentar directamente el RPC, sin prevalidar el stock ya descontado ni generar otro UUID. No agregar un reintento automático de escritura.
 - `Controllers/LoginController.cs` y `Infrastructure/SupabaseAuthService.cs`: login contra Supabase Auth; cookie cifrada `Nova.Session`, `HttpOnly`, con vencimiento ligado al token. La opción Recordarme permite persistencia hasta ese vencimiento. Actualmente se requiere iniciar sesión otra vez al expirar; no asumir renovación automática.
 - El token de acceso se conserva en las propiedades de autenticación y el servidor lo usa para consultar datos. No enviarlo al JavaScript ni guardarlo en el repositorio.
 - `Infrastructure/SupabaseCatalogoService.cs`: consulta `products` con relaciones `brands` y `categories`; lee rangos de hasta 500 filas hasta agotar resultados. También consulta las tablas de marcas y categorías.
@@ -56,7 +59,9 @@ Rutas locales de consulta actuales, todas GET y con sesión:
 
 Creación implementada: `POST /api/productos` con sesión y antifalsificación. Envía categoría, marca, SKU, nombre, precio, mínimo, estado, descripción e imagen a `POST /rest/v1/products?select=id` con `Prefer: return=representation`; el JWT del usuario y RLS restringen la escritura a administradores activos. Omite stock inicial (default cero); las entradas se hacen por ajustes. `GET /api/productos/filtros?activos=true` devuelve opciones activas para el formulario.
 
-Frontend de creación: botón **Nuevo producto**, parcial `Pages/Shared/_ProductoFormulario.cshtml`, `wwwroot/js/producto-form.js` y `wwwroot/css/producto-form.css`. Shell reutilizable: `Views/Shared/_Modal.cshtml` + `Models/ModalOptions.cs`, `modal.js` y `modal.css`; configurable con título, descripción, parcial y formulario. Diálogo nativo con foco/Escape; bloqueo de cierre al guardar. Stock inicial de solo lectura, descripción opcional y URL HTTPS de imagen; no hay carga de archivos. Tras éxito refresca listado y KPI. No hay reintentos automáticos de escritura.
+Frontend de creación: botón **Nuevo producto**, parcial `Pages/Shared/_ProductoFormulario.cshtml`, `wwwroot/js/producto-form.js` y `wwwroot/css/producto-form.css`. Shell reutilizable: `Views/Shared/_Modal.cshtml` + `Models/ModalOptions.cs`, `modal.js` y `modal.css`; configurable con título, descripción, parcial y formulario. Diálogo nativo con foco/Escape; bloqueo de cierre al guardar. Stock inicial de solo lectura, descripción opcional e imagen por archivo o URL. Tras éxito refresca listado y KPI. No hay reintentos automáticos de escritura.
+
+Storage desplegado: bucket público `product-images`, máximo 5 MB, JPEG/PNG/WebP. RLS de objetos permite INSERT solo a administrador activo en `catalogo/{auth.uid()}/` y SELECT de metadatos solo a administrador. Sin UPDATE/DELETE. Servicio `SupabaseStorageService` y `POST /api/productos/imagen` (multipart `archivo`, sesión y antifalsificación); JWT y clave publicable solo en servidor. El formulario sube al guardar, guarda URL pública en el producto y conserva la URL para reintentar si falla el producto. Desvincular no borra objetos. No cargar documentos privados aquí. Ver `documentación/Storage.md` y DDL aplicado `documentación/storage_product_images.sql`.
 
 El estado de stock y los indicadores se calculan actualmente en C#; la paginación del listado se realiza en Nova tras obtener las filas. Los KPI consideran productos activos y no cambian con los filtros: disponible si `stock > minimum_stock`, bajo si `0 < stock <= minimum_stock`, agotado si `stock = 0`. Los inactivos pueden consultarse en la tabla y no cuentan en los KPI.
 
@@ -78,7 +83,7 @@ Orden de continuación propuesto a partir del estado del repositorio; confirmar 
 
 1. Validar el flujo real de login y catálogo con una sesión autorizada, incluidos errores, filtros, detalle y vencimiento de sesión.
 2. Alinear la integración de productos con la vista y el RPC documentados, revisando DTO, filtros, conteos y paginación en Supabase. Actualizar también la documentación que haya quedado desfasada.
-3. Definir Storage e imágenes: bucket, acceso público o privado y resolución de rutas. Actualmente `image_path` puede ser nulo; se admiten URL HTTPS o rutas locales absolutas y se usa un ícono si la imagen falta o falla.
+3. Verificar carga real con JWT admin/vendedor en el bucket ya configurado, y definir mantenimiento de archivos huérfanos. No borrar imágenes referenciadas ni intentar limpieza automática tras una respuesta incierta.
 4. Acordar el siguiente módulo funcional. La API documenta clientes, ventas, ajustes y estadísticas, pero no hay una prioridad de implementación confirmada en este archivo.
 
 ## Ejecutar y comprobar
@@ -112,6 +117,7 @@ No se identificó un proyecto de pruebas automatizadas en la estructura revisada
 
 ## Reglas de trabajo
 
+- Documentar cada modificación junto con su implementación: mantener este archivo y los documentos del módulo actualizados con comportamiento, contratos, comprobaciones y pendientes. Toda API nueva o modificada debe registrarse también en `documentación/Comercial_Nova.postman_collection.json`, explicando método, ruta, autenticación, parámetros/cuerpo, respuestas y errores. Distinguir rutas locales de Nova de endpoints de Supabase.
 - En cada entrega que incluya modificaciones al proyecto, mostrar al usuario el comando para limpiar y ejecutar desde PowerShell: `.\iniciar.cmd`. Incluir también la alternativa directa `dotnet run --project Nova.csproj`. Ofrecer `bash iniciar.sh` solo si usa una terminal con Bash disponible. Mostrar los comandos de ejecución en la respuesta final, también cuando el cambio sea solo documental.
 - Mantener controladores delgados y comunicación con Supabase en servicios; conservar los contratos en DTO/modelos.
 - Usar el token del usuario y respetar RLS; no sustituirlo por claves privilegiadas para evitar restricciones.
@@ -131,5 +137,9 @@ No se identificó un proyecto de pruebas automatizadas en la estructura revisada
 
 ## Última entrega
 
+- 2026-11-25: configurado bucket público `product-images` (5 MB, JPEG/PNG/WebP) y dos políticas RLS acotadas a rol/bucket/carpeta, sin sobrescritura/borrado. Integrados selector, vista previa y subida al guardar por nueva API `POST /api/productos/imagen`. Bucket/políticas verificados por SQL y asesor de seguridad consultado (solo aviso previo de contraseñas filtradas de Auth). Compilación correcta y 17 casos de subida en host aislado con Storage simulado. No se subieron fotos reales ni se cambió el plan. Documentación/JSON actualizados. Pendientes prueba con JWT real e inspección visual.
+- 2026-11-25: implementada nueva venta en `/Ventas`, cuatro APIs locales y navegación compartida responsive. Contrato del RPC y esquema revisados con consultas de solo lectura; sin cambios remotos. Documentación en `documentación/Ventas.md` y carpeta **Nova local — ventas** de Postman. Compilación temporal correcta y 24 casos POST en host aislado con Supabase simulado, además de búsquedas, Razor con ocho skeletons y sintaxis JS. Pendientes pruebas con sesión/stock reales, concurrencia e inspección visual (host de navegador no disponible). Sin ventas reales ni descuentos de inventario durante pruebas.
+- 2026-11-25: edición integrada en el modal de alta mediante `PATCH /api/productos/{id}`; detalle ampliado con descripción e IDs de relaciones. SKU y stock no se incluyen en el PATCH saliente a Supabase. Acciones con SVG de detalle/edición, transición derecha a izquierda con hover/foco, visibles en táctil y tabla como tarjetas hasta 600 px. Imagen por URL con vista previa y desvinculación, sin eliminar archivos remotos. Investigación de Storage en `documentación/Storage.md`: consulta remota de solo lectura confirmó ausencia de buckets/políticas; no se desplegó carga ni se cambió el plan. Documentación y colección Postman se actualizan junto con el código.
+- Validación de edición: compilación con salida temporal correcta (la instancia abierta bloquea `bin/`); 17 casos HTTP en host aislado con autenticación y Supabase simulados aprobados. Comprobados filtro PATCH por ID, cabeceras, exclusión de SKU/stock, imagen null/ruta local, errores, DTO de detalle, Razor, sintaxis JS y JSON/scripts de Postman. Pendientes revisión visual y escritura con sesión real. Detener la instancia anterior antes de ejecutar `.\iniciar.cmd`.
 - 2026-11-25: implementados modal reutilizable y creación de productos. Contrato contrastado con Postman y esquema/restricciones/políticas reales mediante consultas de solo lectura. Compilación correcta y 14 comprobaciones HTTP en host temporal aislado con autenticación y Supabase simulados; se comprobó render Razor, payload, cabeceras, CSRF, autorización, validaciones, duplicados y permisos. Sintaxis JavaScript válida. Corregida validación decimal para independencia de configuración regional. No se escribieron datos reales. Pendientes prueba de creación con sesión real y revisión visual: Computer Use no pudo determinar la URL de Chrome y detuvo la inspección.
 - 2026-11-25: creado este documento de contexto tras revisar estructura, código, documentación e historial reciente. El trabajo visible más reciente es la pantalla de productos y sus controladores. Pendiente continuar con la tarea que indique el usuario; la integración de vista/RPC y su validación HTTP siguen señaladas arriba.

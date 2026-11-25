@@ -7,6 +7,34 @@ namespace Nova.Controllers;
 [Route("api/productos")]
 public sealed class ProductosController(SupabaseCatalogoService catalogo) : CatalogoControllerBase
 {
+    [HttpPatch("{id:long}")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Editar(long id, [FromBody] CrearProductoInput input, CancellationToken ct) => ConsultarAsync(async () =>
+    {
+        if (id <= 0) return BadRequest(new { title = "El identificador del producto no es válido." });
+        try
+        {
+            var guardado = await catalogo.EditarAsync(id, input, ct);
+            return Ok(new { id = guardado });
+        }
+        catch (SupabaseCatalogoException ex) when (ex.Status == System.Net.HttpStatusCode.NotFound)
+        {
+            return NotFound(new { title = "El producto no existe o tu perfil no tiene permiso para editarlo." });
+        }
+        catch (SupabaseCatalogoException ex) when (ex.Status == System.Net.HttpStatusCode.Forbidden)
+        {
+            return Problem(statusCode: 403, title: "Solo un administrador con perfil activo puede editar productos.");
+        }
+        catch (SupabaseCatalogoException ex) when (ex.Code == "23505")
+        {
+            return Problem(statusCode: 409, title: "Los datos entran en conflicto con otro producto. Actualiza el catálogo y revisa el registro.");
+        }
+        catch (SupabaseCatalogoException ex) when (ex.Code is "23503" or "23514" || ex.Status == System.Net.HttpStatusCode.BadRequest)
+        {
+            return Problem(statusCode: 400, title: "Revisa los datos y selecciona una marca y categoría válidas.");
+        }
+    });
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> Crear([FromBody] CrearProductoInput input, CancellationToken ct) => ConsultarAsync(async () =>

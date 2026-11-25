@@ -15,6 +15,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<SupabaseCatalogoService>();
+builder.Services.AddScoped<SupabaseVentasService>();
+builder.Services.AddScoped<SupabaseStorageService>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -45,6 +47,14 @@ builder.Services.AddHttpClient(SupabaseOptions.SectionName, (services, client) =
     client.BaseAddress = new Uri(options.ProjectUrl!, "/rest/v1/");
     client.DefaultRequestHeaders.Add("apikey", options.PublishableKey);
     client.Timeout = TimeSpan.FromSeconds(15);
+});
+
+builder.Services.AddHttpClient(SupabaseStorageService.ClientName, (services, client) =>
+{
+    var options = services.GetRequiredService<IOptions<SupabaseOptions>>().Value;
+    client.BaseAddress = new Uri(options.ProjectUrl!, "/storage/v1/");
+    client.DefaultRequestHeaders.Add("apikey", options.PublishableKey);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<SupabaseAuthService>(client =>

@@ -51,6 +51,32 @@
 .stock--agotado { color: #b42320; }
 .producto__ver { border: 0; padding: 0.45rem 0.6rem; border-radius: 0.4rem; background: transparent; color: var(--nova-blue-dark); font-size: 0.72rem; }
 .producto__ver:hover { background: #eef0ff; }
+.producto__acciones-celda { width: 7rem; overflow: hidden; }
+.producto__acciones { display: flex; justify-content: flex-end; gap: .4rem; opacity: 0; transform: translateX(1.6rem); pointer-events: none; transition: transform .22s ease, opacity .22s ease; }
+.catalogo tbody tr:is(:hover, :focus-within) .producto__acciones { opacity: 1; transform: translateX(0); pointer-events: auto; }
+.producto__accion { display: grid; place-items: center; flex: none; width: 2.75rem; height: 2.75rem; padding: .65rem; border: 1px solid #dbe3ef; border-radius: .5rem; color: var(--nova-blue-dark); background: #f3f5ff; }
+.producto__accion svg { width: 1.1rem; height: 1.1rem; }
+.producto__accion:hover { color: #fff; background: var(--nova-blue); border-color: var(--nova-blue); }
+.detalle-descripcion { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .85rem; line-height: 1.6; }
+@media (hover: none), (pointer: coarse), (max-width: 850px) { .producto__acciones { opacity: 1; transform: none; pointer-events: auto; } }
+@media (prefers-reduced-motion: reduce) { .producto__acciones { transition: none; } }
+@media (max-width: 600px) {
+  .catalogo__scroll { overflow: visible; }
+  .catalogo table { white-space: normal; }
+  .catalogo thead { display: none; }
+  .catalogo tbody { display: block; }
+  .catalogo tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; padding: 1rem; border-bottom: 1px solid var(--nova-border); }
+  .catalogo tbody td { display: block; min-width: 0; padding: 0; border: 0; overflow-wrap: anywhere; }
+  .catalogo tbody td::before { display: block; content: attr(data-label); margin-bottom: .35rem; color: var(--nova-muted); font-size: .65rem; }
+  .catalogo tbody td:first-child { grid-column: 1 / -1; }
+  .catalogo tbody td:first-child::before { display: none; }
+  .catalogo tbody .numero { text-align: left; }
+  .catalogo .producto__acciones-celda { grid-column: 1 / -1; width: auto; overflow: visible; }
+  .producto__acciones { justify-content: flex-start; }
+  .producto__nombre { overflow-wrap: anywhere; }
+  .producto__imagen { flex: none; }
+  .catalogo .catalogo__empty { grid-column: 1 / -1; }
+}
 .catalogo__empty { padding: 3rem 1.5rem !important; text-align: center; color: var(--nova-muted); white-space: normal; }
 .catalogo__notice { padding: 0.7rem 1rem; font-size: 0.8rem; border-radius: 0.5rem; background: #fff8e8; color: #945b0b; }
 .catalogo__pagination { display: flex; justify-content: space-between; align-items: center; padding: 1rem; font-size: 0.72rem; color: var(--nova-muted); }

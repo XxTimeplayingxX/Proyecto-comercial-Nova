@@ -1,8 +1,20 @@
 # Nova
 
+## Nueva venta
+
+La opción **Ventas** abre `/Ventas`: catálogo con búsqueda por nombre/SKU, categorías, skeletons por tarjeta, carrito y cliente opcional. Primero **Validar pedido** consulta precios y stock reales; después **Confirmar venta** usa el RPC transaccional existente. Las operaciones sin respuesta conservan su UUID para recuperarse sin duplicar la venta. La barra lateral usa un drawer en móvil y el resumen se adapta a pantallas pequeñas.
+
+[Documentación de ventas](documentación/Ventas.md) y carpeta **Nova local — ventas** en [Postman](documentación/Comercial_Nova.postman_collection.json). No se implementó aún historial de ventas, cobro bancario, factura fiscal ni simulador.
+
+## Editar productos
+
+Cada fila del catálogo ofrece íconos de **Ver detalles** y **Editar producto**. Con mouse o teclado aparecen desde la derecha; en móvil permanecen visibles y las filas se adaptan a tarjetas. La edición reutiliza el modal del alta, carga los valores actuales y guarda mediante `PATCH /api/productos/{id}`. SKU y stock permanecen de solo lectura. Permite previsualizar y quitar la referencia de imagen, sin eliminar archivos remotos.
+
+Contrato, validaciones y errores: [documentación de productos](documentación/Productos.md). Cada API local y el flujo de sesión/antifalsificación están documentados en la [colección Postman](documentación/Comercial_Nova.postman_collection.json). La carga de imágenes ya está integrada con el bucket público `product-images`, hasta 5 MB en JPEG/PNG/WebP y solo por administradores activos. Consultar [Storage, configuración, beneficios y costos](documentación/Storage.md).
+
 ## Nuevo producto y modal reutilizable
 
-En `/Productos`, **Nuevo producto** abre un formulario modal con la paleta azul y tipografía Inter del proyecto. Permite registrar nombre, SKU (manual o generado), categoría y marca activas, estado comercial, descripción opcional, URL HTTPS de imagen, precio y stock mínimo. El stock inicial es cero; las entradas se registran mediante ajustes de inventario. La carga de archivos queda pendiente de definir Storage.
+En `/Productos`, **Nuevo producto** abre un formulario modal con la paleta azul y tipografía Inter del proyecto. Permite registrar nombre, SKU (manual o generado), categoría y marca activas, estado comercial, descripción opcional, archivo de imagen o URL HTTPS, precio y stock mínimo. El stock inicial es cero; las entradas se registran mediante ajustes de inventario. El archivo se sube al guardar mediante `POST /api/productos/imagen`; si falla la carga no se guarda el producto. Las mismas opciones están disponibles en edición.
 
 `POST /api/productos` requiere sesión y token antifalsificación; el servidor envía `POST /rest/v1/products?select=id` con `Prefer: return=representation`, clave publicable y JWT del usuario. RLS exige un administrador activo. No se envía `stock`; se respeta su valor predeterminado. El formulario conserva los datos ante errores, identifica SKU duplicado y permisos insuficientes, y actualiza listado e indicadores al confirmar la creación. Los reintentos de una escritura no son automáticos.
 

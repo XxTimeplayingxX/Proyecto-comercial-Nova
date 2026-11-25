@@ -1,5 +1,46 @@
 # Productos — equivalencia SQL y API REST
 
+## Implementación web actual: crear y editar
+
+Actualización 2026-11-25. La tabla de `/Productos` ofrece íconos de detalle y edición. En escritorio aparecen desplazándose de derecha a izquierda al hacer hover o entrar con teclado, y se esconden al salir. En pantallas táctiles y anchos pequeños están siempre visibles; hasta 600 px la tabla se presenta como tarjetas. La animación respeta `prefers-reduced-motion`.
+
+La edición usa el modal reutilizable del alta, precarga datos reales y mantiene SKU y stock como solo lectura. Permite modificar nombre, marca, categoría, descripción, estado, precio, stock mínimo e imagen por URL. Si la marca o categoría actual dejó de estar activa, se conserva como opción actual para no perder la asociación al guardar. La imagen admite vista previa; quitarla desvincula la referencia sin borrar archivos remotos.
+
+| Método y ruta en Nova | Funcionamiento |
+| --- | --- |
+| `GET /api/productos/{id}` | Devuelve detalle, ahora también `descripcion`, `marcaId` y `categoriaId`. |
+| `GET /api/productos/filtros?activos=true` | Opciones activas para el formulario. |
+| `POST /api/productos` | Crea el producto; conserva el valor inicial de stock de la base. |
+| `PATCH /api/productos/{id}` | Edita datos comerciales, sin enviar SKU ni stock a Supabase. |
+
+POST y PATCH requieren cookie de sesión de Nova y cabecera `RequestVerificationToken` obtenida del formulario Razor en esa misma sesión. No se autentican con el bearer de Supabase directamente en el navegador. El servidor transmite el JWT de usuario a Supabase; solo administradores activos pueden escribir según RLS.
+
+Cuerpo local completo del formulario (PATCH local recibe el formulario completo, no un parche parcial de un solo campo):
+
+```json
+{
+  "nombre": "Consola de videojuegos",
+  "sku": "CON-001",
+  "categoriaId": 1,
+  "marcaId": 1,
+  "precio": 499.99,
+  "stockMinimo": 5,
+  "activo": true,
+  "descripcion": "Descripción del producto",
+  "imagen": null
+}
+```
+
+`sku` es requerido por el DTO compartido; en edición se muestra de solo lectura y el servicio lo excluye de la escritura. `stock` no pertenece al DTO. Nombre: 3–200 caracteres; SKU: 1–80; descripción opcional hasta 250; precio mayor que cero y hasta dos decimales; mínimo entero no negativo; imagen opcional HTTPS o ruta local absoluta segura. Para ajustes de existencias usar `adjust_stock`.
+
+El PATCH saliente es `/rest/v1/products?id=eq.{id}&select=id`, con `Prefer: return=representation`. Nova devuelve `200 {"id":...}` solo si se confirma una fila; `[]` devuelve 404 (inexistente o sin acceso), nunca éxito ficticio. Errores locales: 400 validación/antifalsificación/referencias, 401 sesión, 403 permisos, 404 producto no actualizado, 409 conflicto y 502/503 servicio externo. No hay reintentos automáticos. Tras confirmar el guardado se refrescan listado e indicadores, conservando los filtros.
+
+Los ejemplos ejecutables y el flujo de login/cookie/antifalsificación están en la carpeta **Nova local — catálogo** de la colección Postman. [Storage y costos](Storage.md): bucket público `product-images` ya desplegado y carga local `POST /api/productos/imagen` integrada. Se pueden seleccionar archivos JPEG/PNG/WebP de hasta 5 MB; se suben al guardar y su URL se conserva si falla posteriormente la escritura del producto. No hay borrado ni sobrescritura automática de objetos.
+
+Las secciones SQL/REST siguientes registran el estado de la base; la aplicación todavía consulta `products` y calcula KPI en C#, no consume aún la vista y el RPC de resumen.
+
+Verificación de esta entrega: compilación sin errores ni advertencias con salida temporal para evitar los binarios en uso de la instancia abierta. En un host temporal con autenticación y Supabase simulados pasaron 17 casos HTTP de edición (200, 400, 401, 403, 404 y 409), incluido intento de enviar SKU/stock, desvinculación de imagen y conservación de ruta local. Se comprobaron DTO de detalle, cabeceras, filtro por ID, render Razor, sintaxis JavaScript y JSON/scripts de Postman. No se modificaron productos reales. Pendientes: inspección visual en navegador y escritura con sesión real autorizada.
+
 Desplegado y verificado por SQL el 2026-11-25. HTTP con JWT real pendiente. No se modificaron datos. SQL Editor puede operar como administrador; la Data API aplica RLS y permisos del usuario.
 
 ## Conexión

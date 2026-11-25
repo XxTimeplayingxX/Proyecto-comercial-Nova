@@ -1,6 +1,5 @@
 @using System.Security.Claims
 @{
-    var currentPage = ViewContext.RouteData.Values["page"] as string;
     var title = ViewData["Title"] as string;
     var email = User.FindFirstValue(ClaimTypes.Email);
     var toasts = ViewData["Toasts"] as ToastMessage[] ?? [];
@@ -17,27 +16,24 @@
     <link rel="stylesheet" href="~/css/toast.css" asp-append-version="true">
     @await RenderSectionAsync("Styles", required: false)
     <script src="~/js/toast.js" asp-append-version="true" defer></script>
+    <script src="~/js/workspace.js" asp-append-version="true" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </head>
 <body class="workspace">
     <aside class="workspace__sidebar">
         <partial name="_Brand" />
-        <nav class="workspace__nav" aria-label="Menú principal">
-            <a asp-page="/Index" aria-current="@(currentPage == "/Index" ? "page" : null)">
-                <span aria-hidden="true">▦</span> Dashboard
-            </a>
-            <a asp-page="/Productos" aria-current="@(currentPage == "/Productos" ? "page" : null)">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16v14H4zM3 3h18v4H3zM9 11h6" /></svg> Productos
-            </a>
-            <a asp-page="/NuestraHistoria" aria-current="@(currentPage == "/NuestraHistoria" ? "page" : null)">
-                <span aria-hidden="true">▤</span> Nuestra historia
-            </a>
-        </nav>
+        <partial name="_WorkspaceNav" />
+        <div class="workspace__sidebar-footer"><span class="workspace__footer-mark" aria-hidden="true">N</span><div><strong>Comercial Nova</strong><span>Gestión comercial</span></div></div>
     </aside>
+    <dialog class="workspace__drawer" id="workspace-menu" aria-label="Navegación principal">
+        <div class="workspace__drawer-heading"><partial name="_Brand" /><button class="workspace__menu-close" id="workspace-menu-cerrar" type="button" aria-label="Cerrar menú">×</button></div>
+        <partial name="_WorkspaceNav" />
+        <p class="workspace__drawer-note">Tu espacio de gestión comercial.</p>
+    </dialog>
 
     <div class="workspace__main">
         <header class="workspace__header">
-            <p class="workspace__location">@title</p>
+            <div class="workspace__header-start"><button id="workspace-menu-abrir" class="workspace__menu-toggle" type="button" aria-controls="workspace-menu" aria-expanded="false" aria-label="Abrir menú"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button><p class="workspace__location">@title</p></div>
             @if (!string.IsNullOrWhiteSpace(email))
             {
                 <div class="workspace__account">

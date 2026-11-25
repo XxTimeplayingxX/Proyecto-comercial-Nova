@@ -28,8 +28,12 @@ public sealed class CrearProductoInput : IValidatableObject
             yield return new ValidationResult("El nombre debe tener al menos 3 caracteres.", [nameof(Nombre)]);
         if (decimal.Round(Precio, 2) != Precio)
             yield return new ValidationResult("El precio admite hasta dos decimales.", [nameof(Precio)]);
-        if (!string.IsNullOrWhiteSpace(Imagen) &&
-            (!Uri.TryCreate(Imagen.Trim(), UriKind.Absolute, out var uri) || uri.Scheme != "https"))
-            yield return new ValidationResult("La imagen debe ser una URL HTTPS válida.", [nameof(Imagen)]);
+        if (!string.IsNullOrWhiteSpace(Imagen))
+        {
+            var image = Imagen.Trim();
+            var local = image.StartsWith('/') && !image.StartsWith("//", StringComparison.Ordinal) && !image.Contains('\\');
+            if (!local && (!Uri.TryCreate(image, UriKind.Absolute, out var uri) || uri.Scheme != "https"))
+                yield return new ValidationResult("La imagen debe ser una URL HTTPS o una ruta local absoluta válida.", [nameof(Imagen)]);
+        }
     }
 }
