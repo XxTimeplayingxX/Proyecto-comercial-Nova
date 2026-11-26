@@ -1,0 +1,9 @@
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <form asp-route="SignOutNova" method="post" asp-antiforgery="true" class="workspace__logout">
+        <button type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M10 4H4v16h6m4-4 4-4-4-4m4 4H8"/></svg>
+            Cerrar sesión
+        </button>
+    </form>
+}

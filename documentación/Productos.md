@@ -2,7 +2,7 @@
 
 ## Implementación web actual: crear y editar
 
-Actualización 2026-11-25. La tabla de `/Productos` ofrece íconos de detalle y edición. En escritorio aparecen desplazándose de derecha a izquierda al hacer hover o entrar con teclado, y se esconden al salir. En pantallas táctiles y anchos pequeños están siempre visibles; hasta 600 px la tabla se presenta como tarjetas. La animación respeta `prefers-reduced-motion`.
+Actualización 2026-11-25. La tabla de `/Productos` ofrece íconos de detalle, edición y **Agregar stock**. En escritorio aparecen desplazándose de derecha a izquierda al hacer hover o entrar con teclado, y se esconden al salir. En pantallas táctiles y anchos pequeños están siempre visibles; hasta 600 px la tabla se presenta como tarjetas. La animación respeta `prefers-reduced-motion`.
 
 La edición usa el modal reutilizable del alta, precarga datos reales y mantiene SKU y stock como solo lectura. Permite modificar nombre, marca, categoría, descripción, estado, precio, stock mínimo e imagen por URL. Si la marca o categoría actual dejó de estar activa, se conserva como opción actual para no perder la asociación al guardar. La imagen admite vista previa; quitarla desvincula la referencia sin borrar archivos remotos.
 
@@ -12,6 +12,7 @@ La edición usa el modal reutilizable del alta, precarga datos reales y mantiene
 | `GET /api/productos/filtros?activos=true` | Opciones activas para el formulario. |
 | `POST /api/productos` | Crea el producto; conserva el valor inicial de stock de la base. |
 | `PATCH /api/productos/{id}` | Edita datos comerciales, sin enviar SKU ni stock a Supabase. |
+| `POST /api/productos/{id}/stock` | Registra una entrada de existencias mediante `adjust_stock`. |
 
 POST y PATCH requieren cookie de sesión de Nova y cabecera `RequestVerificationToken` obtenida del formulario Razor en esa misma sesión. No se autentican con el bearer de Supabase directamente en el navegador. El servidor transmite el JWT de usuario a Supabase; solo administradores activos pueden escribir según RLS.
 
@@ -42,6 +43,25 @@ Las secciones SQL/REST siguientes registran el estado de la base; la aplicación
 Verificación de esta entrega: compilación sin errores ni advertencias con salida temporal para evitar los binarios en uso de la instancia abierta. En un host temporal con autenticación y Supabase simulados pasaron 17 casos HTTP de edición (200, 400, 401, 403, 404 y 409), incluido intento de enviar SKU/stock, desvinculación de imagen y conservación de ruta local. Se comprobaron DTO de detalle, cabeceras, filtro por ID, render Razor, sintaxis JavaScript y JSON/scripts de Postman. No se modificaron productos reales. Pendientes: inspección visual en navegador y escritura con sesión real autorizada.
 
 Desplegado y verificado por SQL el 2026-11-25. HTTP con JWT real pendiente. No se modificaron datos. SQL Editor puede operar como administrador; la Data API aplica RLS y permisos del usuario.
+
+## Agregar stock
+
+El modal de cada fila muestra los datos del producto, el stock del listado, la cantidad y el stock estimado. Los botones −, +, +5, +10 y +20 ajustan la cantidad. Se puede seleccionar un motivo, indicar el punto de ingreso y adjuntar hasta 250 caracteres de observaciones. Al confirmar se bloquean los controles durante el envío. La confirmación muestra el stock devuelto por Supabase y refresca el listado y los indicadores con los filtros vigentes. [Historial del producto](Trazabilidad.md).
+
+`POST /api/productos/{id}/stock` requiere ID positivo, cookie `Nova.Session`, cabecera `RequestVerificationToken` de esa sesión y perfil administrador activo. Cuerpo de ejemplo:
+
+```json
+{"cantidad":5,"motivo":"Ingreso de mercadería","puntoIngreso":"Bodega central","observaciones":"Lote de prueba"}
+```
+
+`cantidad` es un entero positivo hasta 2147483647. El total también debe caber en ese rango. Los motivos válidos son `Ingreso de mercadería`, `Devolución`, `Corrección de inventario` y `Otro`. `puntoIngreso` (hasta 100 caracteres) y `observaciones` admiten omisión, null o texto. Nova agrega esos datos al motivo y envía `p_product_id`, `p_movement_type: "entry"`, `p_quantity` y `p_reason` a `POST /rest/v1/rpc/adjust_stock` con el JWT de usuario. El RPC suma al stock vigente de forma atómica y escribe el movimiento con el usuario autenticado, fecha y stock anterior y nuevo.
+
+- **200** devuelve `{"id":1,"stock":6}`. El valor confirmado puede diferir del estimado si hubo otras operaciones simultáneas.
+- **400** indica campos inválidos o antifalsificación ausente/inválida. **401** indica sesión ausente o vencida. **403** indica perfil sin permiso.
+- **409** indica producto inexistente o un total que excede el máximo de inventario.
+- **502/503** indican que no pudo confirmarse el ajuste. Ante un resultado incierto o pérdida de conexión, el formulario bloquea otro envío desde el mismo diálogo y actualiza el catálogo. Confirmar el movimiento en el historial antes de registrar nuevamente el ingreso, porque el RPC no admite una clave de idempotencia.
+
+El 2026-11-25 se comprobaron por SQL de solo lectura la firma, los permisos y el comportamiento transaccional del RPC. Pasaron 21 comprobaciones con un host aislado y Supabase simulado, incluidas renderización Razor, cookie y antifalsificación, cantidades inválidas, argumentos enviados al RPC, respuesta confirmada y errores. No se modificaron existencias reales. Quedan pendientes la escritura con sesión real y la inspección visual, que se detuvo porque el control del navegador en Windows no pudo verificar la URL.
 
 ## Conexión
 

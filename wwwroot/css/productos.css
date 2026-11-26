@@ -51,7 +51,7 @@
 .stock--agotado { color: #b42320; }
 .producto__ver { border: 0; padding: 0.45rem 0.6rem; border-radius: 0.4rem; background: transparent; color: var(--nova-blue-dark); font-size: 0.72rem; }
 .producto__ver:hover { background: #eef0ff; }
-.producto__acciones-celda { width: 7rem; overflow: hidden; }
+.producto__acciones-celda { width: 10rem; overflow: hidden; }
 .producto__acciones { display: flex; justify-content: flex-end; gap: .4rem; opacity: 0; transform: translateX(1.6rem); pointer-events: none; transition: transform .22s ease, opacity .22s ease; }
 .catalogo tbody tr:is(:hover, :focus-within) .producto__acciones { opacity: 1; transform: translateX(0); pointer-events: auto; }
 .producto__accion { display: grid; place-items: center; flex: none; width: 2.75rem; height: 2.75rem; padding: .65rem; border: 1px solid #dbe3ef; border-radius: .5rem; color: var(--nova-blue-dark); background: #f3f5ff; }
@@ -125,7 +125,7 @@
 .skeleton--price { width: 3.5rem; margin-left: auto; }
 .skeleton--stock { width: 4rem; margin-left: auto; }
 .skeleton--badge { width: 5rem; height: 1.3rem; border-radius: 2rem; }
-.skeleton--action { width: 4.5rem; }
+.skeleton--action { width: 6.5rem; }
 .detalle-skeleton__imagen { width: 6rem; height: 6rem; margin-bottom: 1.5rem; border-radius: 0.5rem; }
 .detalle-skeleton__campos { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem 1rem; margin: 1rem 0; }
 .detalle-skeleton__campos .skeleton--label { width: 6rem; height: 1rem; }

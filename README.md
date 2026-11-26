@@ -24,7 +24,13 @@ Validación del 2026-11-25: compilación y 14 comprobaciones HTTP en un host tem
 
 ## Catálogo de productos
 
+**Vendedores** ofrece fichas completas para crear y editar cuentas, cambiar estado y rol, restablecer contraseñas y consultar ventas acumuladas. Las credenciales se gestionan en Auth cuando el servidor tiene configurada `Supabase__AuthAdminKey`. El personal inicia sesión en `/Login` con un perfil activo. [Configuración y guía de vendedores](documentación/Vendedores.md).
+
 La pantalla `/Productos` está disponible desde el sidebar después del login. Conserva el layout compartido, la tipografía Inter y la paleta azul. Ofrece búsqueda por nombre o SKU, filtros por marca, categoría y estado, paginación, actualización manual y detalle en un diálogo accesible. Las opciones de marca y categoría se consultan en Supabase. No se incluyen productos ni indicadores de demostración en la pantalla.
+
+En **Acciones → Agregar stock**, un administrador activo puede registrar unidades, indicar el motivo y adjuntar observaciones. Al confirmar, se registra el movimiento en inventario y se actualizan la tabla y los indicadores. [Detalle del flujo y contrato](documentación/Productos.md#agregar-stock).
+
+**Acciones → Ver trazabilidad** muestra a administradores el alta, los ingresos, las salidas y las ventas de cada producto, con responsable, vendedor y comprador registrado. [Historial de productos](documentación/Trazabilidad.md).
 
 Los controladores usan la clave publicable configurada y el token de la sesión web para respetar los permisos RLS. Las respuestas del catálogo no se almacenan en caché. No guardes el correo, la contraseña ni tokens en archivos del repositorio.
 

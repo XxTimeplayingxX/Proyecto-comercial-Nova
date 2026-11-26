@@ -1,5 +1,11 @@
 # Comercial Nova — API
 
+## Vendedores y trazabilidad
+
+`/Vendedores/Nuevo` y `/Vendedores/Editar/{id}` administran credenciales, perfil, estado y rol. La edición incluye ventas completadas y comprobantes. El servidor usa `Supabase__AuthAdminKey` únicamente para Auth Admin. [Contratos y configuración](Vendedores.md#alta-y-edición-desde-nova).
+
+`/Vendedores` administra perfiles comerciales y usa el mismo login de Nova para administradores y vendedores activos. [Alta en Supabase Auth, vinculación y contratos locales](Vendedores.md). La acción **Ver trazabilidad** en **Productos** consulta altas, movimientos y ventas. [Contrato y alcance del historial](Trazabilidad.md).
+
 ## Nueva venta
 
 Pantalla `/Ventas` y APIs locales `GET /api/ventas/productos`, `GET /api/ventas/clientes`, `POST /api/ventas/validar` y `POST /api/ventas`. Se apoyan en consultas reales y en `rpc/register_sale` ya existente. Cookie de Nova y antifalsificación para POST; token Supabase solo en servidor. [Contrato, estados, recuperación y pruebas](Ventas.md). Ejemplos completos en **Nova local — ventas** de la colección JSON. No se modificaron funciones SQL ni se ejecutaron ventas reales en esta entrega.
@@ -9,6 +15,8 @@ Pantalla `/Ventas` y APIs locales `GET /api/ventas/productos`, `GET /api/ventas/
 La colección Postman también incluye **Nova local — catálogo**, con login mediante cookie, obtención del token antifalsificación y las rutas de detalle, selectores, creación y edición de ASP.NET. La API nueva `PATCH /api/productos/{id}` recibe el formulario completo y escribe campos comerciales mediante `PATCH /rest/v1/products?id=eq.ID&select=id`; nunca escribe stock ni SKU. Requiere administrador activo por RLS. Ver [contrato, respuestas y errores](Productos.md#implementación-web-actual-crear-y-editar).
 
 Imágenes y precios: [Storage.md](Storage.md). Bucket público `product-images` desplegado el 2026-11-25, hasta 5 MB en JPEG/PNG/WebP, carga restringida a administradores activos por RLS. API local `POST /api/productos/imagen` integrada en creación/edición, con sesión y antifalsificación. No hay sobrescrituras ni borrado automático de objetos. Ver DDL y ejemplos en la carpeta **Storage — imágenes de productos** de Postman. Validación remota por SQL y pruebas locales con Storage simulado; prueba HTTP con JWT real pendiente.
+
+**Agregar stock** está disponible en las acciones de cada producto. La API local `POST /api/productos/{id}/stock` usa la cookie y el token antifalsificación de Nova y llama al RPC `adjust_stock` con el JWT del administrador activo. [Contrato y recuperación ante un resultado incierto](Productos.md#agregar-stock).
 
 Documentar toda API nueva o modificada en esta colección JSON junto con su implementación, incluyendo autenticación, parámetros, cuerpos y errores. Las rutas locales con cookie no deben confundirse con endpoints de Supabase autenticados con JWT.
 

@@ -1,0 +1,113 @@
+@page "/Vendedores/{accion:regex(^(Nuevo|Editar)$)}/{id:guid?}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin")]
+@attribute [Microsoft.AspNetCore.Mvc.ResponseCache(NoStore = true, Location = Microsoft.AspNetCore.Mvc.ResponseCacheLocation.None)]
+@inject Nova.Infrastructure.SupabaseAuthAdminService AuthAdmin
+@{
+    Layout = "_WorkspaceLayout";
+    var edit = string.Equals(RouteData.Values["accion"]?.ToString(), "Editar", StringComparison.OrdinalIgnoreCase);
+    var id = RouteData.Values["id"]?.ToString();
+    var validRoute = edit == (id is not null);
+    if (!validRoute) { Response.StatusCode = 404; }
+    var title = edit ? "Editar vendedor" : "Nuevo vendedor";
+    ViewData["Title"] = "Vendedores";
+    var canManageAuth = AuthAdmin.Disponible;
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/productos.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/modal.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/vendedor-ficha.css" asp-append-version="true">
+}
+@section Scripts {
+    @if (validRoute)
+    {
+        <script src="~/js/modal.js" asp-append-version="true" defer></script>
+        <script src="~/js/vendedor-ficha.js" asp-append-version="true" defer></script>
+    }
+}
+<div class="catalogo ficha">
+    <nav class="ficha__nav" aria-label="Ruta de navegación">
+        <span><a asp-page="/Vendedores">Vendedores</a> <span aria-hidden="true">›</span> @title</span>
+        <a class="catalogo__secondary" asp-page="/Vendedores">← Volver al listado</a>
+    </nav>
+    @if (!validRoute)
+    {
+        <h1>Ficha no disponible</h1>
+    }
+    else
+    {
+        <header class="ficha__header">
+            <span class="ficha__badge">Acceso administrativo</span>
+            <h1 id="ficha-titulo">@title</h1>
+            <p>@(edit ? "Actualiza los datos del perfil, su rol y el estado de acceso." : "Registra una cuenta para las operaciones comerciales de Nova.")</p>
+        </header>
+        <form id="ficha-vendedor" class="ficha__form" data-id="@id" data-auth="@(canManageAuth ? "true" : "false")" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="ficha-operacion" value="@Guid.NewGuid()">
+            <p id="ficha-mensaje" class="ficha__feedback" role="status" hidden></p>
+            <fieldset id="ficha-campos" disabled="@(edit)">
+                <section class="ficha__section" aria-labelledby="ficha-personal">
+                    <h2 id="ficha-personal"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 20v-2a7 7 0 0 1 14 0v2H5Z"/></svg> Información personal y rol</h2>
+                    <div class="ficha__grid">
+                        <label>Nombres <span class="required">*</span><input name="nombre" autocomplete="off" maxlength="80" placeholder="Ej. Elena" required></label>
+                        <label>Apellidos <span class="required">*</span><input name="apellido" autocomplete="off" maxlength="80" placeholder="Ej. Vega Morales" required></label>
+                        <label class="ficha__wide">Correo electrónico institucional <span class="required">*</span><input name="email" type="email" maxlength="254" placeholder="nombre@ejemplo.com" autocomplete="off" readonly="@(!canManageAuth)" required></label>
+                    </div>
+                    <fieldset class="ficha__roles">
+                        <legend>Rol comercial <span class="required">*</span></legend>
+                        <div class="ficha__grid">
+                            <label><input type="radio" name="rol" value="seller" checked><strong>Vendedor</strong><small>Registra ventas y consulta el inventario.</small></label>
+                            <label><input type="radio" name="rol" value="admin"><strong>Administrador</strong><small>Gestiona inventario, ventas y cuentas comerciales.</small></label>
+                        </div>
+                    </fieldset>
+                </section>
+                <section class="ficha__section" aria-labelledby="ficha-seguridad">
+                    <h2 id="ficha-seguridad"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v3"/></svg> Seguridad y estado operativo</h2>
+                    @if (edit)
+                    {
+                        <div class="ficha__callout ficha__credential">
+                            <div><strong>Contraseña de acceso</strong><p>Asigna una contraseña nueva si el usuario necesita recuperar el acceso.</p></div>
+                            <button id="ficha-abrir-clave" type="button" class="catalogo__secondary" data-modal-open="ficha-clave-modal" disabled="@(!canManageAuth)">Restablecer contraseña</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="ficha__grid">
+                            <label>Contraseña inicial <span class="required">*</span><span class="ficha__password"><input id="ficha-clave" name="clave" type="password" minlength="8" maxlength="72" autocomplete="new-password" required><button type="button" data-ver-clave="ficha-clave" aria-label="Mostrar contraseña" aria-pressed="false">Ver</button></span></label>
+                            <label>Confirmar contraseña <span class="required">*</span><span class="ficha__password"><input id="ficha-confirmacion" name="confirmacion" type="password" minlength="8" maxlength="72" autocomplete="new-password" required><button type="button" data-ver-clave="ficha-confirmacion" aria-label="Mostrar confirmación" aria-pressed="false">Ver</button></span></label>
+                        </div>
+                        <p class="ficha__hint">Mínimo 8 caracteres y al menos un número.</p>
+                    }
+                    <label class="ficha__callout ficha__status">
+                        <span><strong>Estado de la cuenta <span id="ficha-estado">Activo</span></strong><small>Los perfiles inactivos conservan su historial y pierden acceso a las operaciones.</small></span>
+                        <input name="activo" type="checkbox" role="switch" checked>
+                    </label>
+                    @if (!canManageAuth)
+                    {
+                        <p class="ficha__callout">El servidor requiere acceso administrativo de Supabase Auth para @(edit ? "cambiar el correo o la contraseña." : "crear credenciales.") @if (!edit) { <a id="ficha-vincular" asp-page="/Vendedores" asp-route-vincular="true">Vincular una cuenta existente</a> }</p>
+                    }
+                </section>
+                @if (edit)
+                {
+                    <section class="ficha__performance ficha__callout" aria-label="Resumen de desempeño">
+                        <strong>Resumen de desempeño acumulado</strong>
+                        <span id="ficha-desempeno">—</span>
+                        <details id="ficha-ventas" hidden>
+                            <summary>Ver desglose de comprobantes</summary>
+                            <ul id="ficha-comprobantes"></ul>
+                            <p id="ficha-comprobantes-mensaje" role="status"></p>
+                            <button type="button" class="catalogo__secondary" id="ficha-comprobantes-mas" hidden>Ver comprobantes anteriores</button>
+                        </details>
+                    </section>
+                }
+            </fieldset>
+            <footer class="ficha__footer">
+                <a class="catalogo__secondary" asp-page="/Vendedores">Cancelar</a>
+                <button class="catalogo__primary" id="ficha-guardar" type="submit" disabled="@(edit || !canManageAuth)">@(edit ? "Guardar cambios" : "Crear vendedor")</button>
+            </footer>
+        </form>
+        @if (edit && canManageAuth)
+        {
+            <partial name="_Modal" model='new ModalOptions("ficha-clave-modal", "Restablecer contraseña", "Vendedores / Seguridad", "Escribe y confirma la nueva contraseña de acceso.", "_VendedorClaveFormulario", "ficha-clave-form", "Guardar contraseña")' />
+        }
+    }
+</div>

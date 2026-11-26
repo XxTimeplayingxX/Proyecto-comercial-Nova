@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Nova.Dtos;
@@ -12,7 +13,7 @@ namespace Nova.Controllers;
 
 [Route("Login")]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-public sealed class LoginController(SupabaseAuthService authService, ILogger<LoginController> logger) : Controller
+public sealed class LoginController(SupabaseAuthService authService, SupabasePersonalService personal, ILogger<LoginController> logger) : Controller
 {
     [AcceptVerbs("GET", "HEAD")]
     [AcceptVerbs("GET", "HEAD", Route = "/")]
@@ -58,6 +59,19 @@ public sealed class LoginController(SupabaseAuthService authService, ILogger<Log
             return ShowError(input, "Verifica tus credenciales o inténtalo de nuevo en unos minutos.");
         }
 
+        PerfilAccesoDto? perfil;
+        try
+        {
+            perfil = await personal.PerfilActivoAsync(user.Id, session.AccessToken, cancellationToken);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or OptionsValidationException or SupabaseCatalogoException
+            || ex is OperationCanceledException && !cancellationToken.IsCancellationRequested)
+        {
+            return ShowError(input, "No se pudo verificar tu perfil comercial. Inténtalo de nuevo.");
+        }
+        if (perfil?.Role is not ("admin" or "seller"))
+            return ShowError(input, "Tu correo necesita un perfil comercial activo. Contacta al administrador.");
+
         var properties = new AuthenticationProperties
         {
             IsPersistent = input.RememberMe,
@@ -67,11 +81,22 @@ public sealed class LoginController(SupabaseAuthService authService, ILogger<Log
 
         const string scheme = CookieAuthenticationDefaults.AuthenticationScheme;
         var identity = new ClaimsIdentity(
-            [new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Email, user.Email)], scheme);
+            [new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Role, perfil.Role)], scheme);
         await HttpContext.SignInAsync(scheme, new ClaimsPrincipal(identity), properties);
 
         TempData["LoginSuccess"] = true;
         return RedirectToPage("/Index");
+    }
+
+    [Authorize]
+    [HttpPost("Salir", Name = "SignOutNova")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Salir()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        TempData.Remove("LoginSuccess");
+        return LocalRedirect("~/Login");
     }
 
     private ViewResult ShowError(LoginInput input, string message)

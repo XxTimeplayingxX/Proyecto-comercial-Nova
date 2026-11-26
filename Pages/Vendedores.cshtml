@@ -1,0 +1,50 @@
+@page "/Vendedores"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin")]
+@attribute [Microsoft.AspNetCore.Mvc.ResponseCache(NoStore = true, Location = Microsoft.AspNetCore.Mvc.ResponseCacheLocation.None)]
+@{
+    Layout = "_WorkspaceLayout";
+    ViewData["Title"] = "Vendedores";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/productos.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/modal.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/producto-form.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/vendedores.css" asp-append-version="true">
+}
+@section Scripts {
+    <script src="~/js/modal.js" asp-append-version="true" defer></script>
+    <script src="~/js/vendedores.js" asp-append-version="true" defer></script>
+}
+
+<div class="catalogo vendedores">
+    <header class="catalogo__heading">
+        <div><h1>Vendedores</h1><p>Gestiona a las personas responsables de las operaciones comerciales.</p></div>
+        <div class="vendedores__heading-actions">
+            <button class="catalogo__secondary" id="vendedor-nuevo" type="button" disabled>Vincular cuenta existente</button>
+            <a class="catalogo__primary" asp-page="/VendedorFicha" asp-route-accion="Nuevo"><span aria-hidden="true">+</span> Agregar vendedor</a>
+        </div>
+    </header>
+
+    <section class="catalogo__kpis" id="vendedores-kpis" aria-label="Resumen del personal" aria-busy="true">
+        <article class="kpi"><div><h2>Perfiles registrados</h2><strong data-vendedor-kpi="total">—</strong></div><span class="kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2H3Zm14-9a3 3 0 0 0 0-6m1 9a5 5 0 0 1 3 4v2"/></svg></span></article>
+        <article class="kpi"><div><h2>Perfiles activos</h2><strong data-vendedor-kpi="activos">—</strong></div><span class="kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3 8 8 10 5-2 8-5 8-10V6l-8-3Z"/><path d="m8 12 3 3 5-6"/></svg></span></article>
+        <article class="kpi"><div><h2>Perfiles inactivos</h2><strong data-vendedor-kpi="inactivos">—</strong></div><span class="kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 3 18 18M8 5a4 4 0 0 1 6 5m-4 2a4 4 0 0 1-3-4m5 7a7 7 0 0 0-9 5h14"/></svg></span></article>
+    </section>
+
+    <label class="catalogo__search vendedores__search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="5"/><path d="m14 14 5 5"/></svg>
+        <input id="vendedores-buscar" type="search" maxlength="120" aria-label="Buscar por nombre o correo electrónico" placeholder="Buscar por nombre o correo electrónico…" disabled>
+    </label>
+    <section class="catalogo__table" id="vendedores-listado" aria-label="Perfiles comerciales" aria-busy="true">
+        <div class="catalogo__scroll">
+            <table id="vendedores-tabla" hidden>
+                <thead><tr><th scope="col">Vendedor</th><th scope="col">Correo electrónico</th><th scope="col">Rol</th><th scope="col" class="numero">Ventas realizadas</th><th scope="col" class="numero">Total vendido</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead>
+                <tbody id="vendedores-filas"></tbody>
+            </table>
+        </div>
+        <p class="catalogo__empty" id="vendedores-mensaje" role="status">Consultando perfiles…</p>
+        <div class="vendedores__retry"><button id="vendedores-reintentar" type="button" class="catalogo__secondary" hidden>Reintentar</button></div>
+    </section>
+</div>
+
+<partial name="_Modal" model='new ModalOptions("vendedor-modal", "Agregar vendedor", "Personal / Acceso", "Vincula una cuenta de Supabase Auth con su perfil comercial.", "_VendedorFormulario", "vendedor-form", "Vincular vendedor")' />

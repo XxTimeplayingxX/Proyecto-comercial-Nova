@@ -9,11 +9,21 @@
     <link rel="stylesheet" href="~/css/productos.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/modal.css" asp-append-version="true">
     <link rel="stylesheet" href="~/css/producto-form.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/stock-form.css" asp-append-version="true">
+    @if (User.IsInRole("admin"))
+    {
+        <link rel="stylesheet" href="~/css/trazabilidad.css" asp-append-version="true">
+    }
 }
 @section Scripts {
     <script src="~/js/modal.js" asp-append-version="true" defer></script>
     <script src="~/js/productos.js" asp-append-version="true" defer></script>
     <script src="~/js/producto-form.js" asp-append-version="true" defer></script>
+    <script src="~/js/stock-form.js" asp-append-version="true" defer></script>
+    @if (User.IsInRole("admin"))
+    {
+        <script src="~/js/trazabilidad.js" asp-append-version="true" defer></script>
+    }
 }
 
 <div class="catalogo">
@@ -52,6 +62,12 @@
 </div>
 
 <partial name="_Modal" model='new ModalOptions("nuevo-producto", "Nuevo producto", "Catálogo / Agregar producto", "Registra un producto en el catálogo comercial de Nova.", "_ProductoFormulario", "producto-form", "Guardar producto")' />
+<partial name="_Modal" model='new ModalOptions("agregar-stock", "Agregar stock", "Catálogo / Inventario", "Registra nuevas existencias en el inventario.", "_StockFormulario", "stock-form", "Confirmar ingreso")' />
+
+@if (User.IsInRole("admin"))
+{
+    <partial name="_Modal" model='new ModalOptions("trazabilidad", "Trazabilidad", "Catálogo / Inventario", "Historial de existencias y ventas del producto.", "_TrazabilidadProducto")' />
+}
 
 <dialog id="detalle" class="producto-detalle" aria-labelledby="detalle-titulo">
     <header><div><p>Catálogo / Detalle del producto</p><h2 id="detalle-titulo">Detalle del producto</h2></div><button type="button" id="cerrar-detalle" aria-label="Cerrar detalle">×</button></header>

@@ -1,0 +1,29 @@
+.vendedores .catalogo__kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.vendedores .kpi { min-height: 5.75rem; }
+.vendedores svg { width: 1.2rem; height: 1.2rem; fill: none; stroke: currentColor; stroke-width: 1.7; flex: none; }
+.vendedores__search { width: min(100%, 24rem); margin-bottom: 1rem; border: 1px solid var(--nova-border); background: #fff; }
+.vendedores__search input { background: transparent; }
+.vendedores__identity { display: flex; align-items: center; gap: .65rem; font-weight: 600; }
+.vendedores__avatar { display: grid; place-items: center; flex: none; width: 2.2rem; height: 2.2rem; border-radius: 50%; color: var(--nova-blue-dark); background: #e7ebff; font-size: .68rem; }
+.vendedores__avatar--admin { color: #fff; background: var(--nova-blue); }
+.vendedores__role { border-radius: 2rem; padding: .28rem .5rem; background: #f0f2f8; color: var(--nova-muted); font-size: .65rem; }
+.vendedores__role--admin, .vendedores .estado--activo { background: #e7ebff; color: var(--nova-blue-dark); }
+.vendedores__actions { display: flex; gap: .35rem; }
+.vendedores__heading-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.vendedores__heading-actions a { text-decoration: none; display: inline-flex; align-items: center; }
+.vendedores__actions .producto__accion { width: 2.2rem; height: 2.2rem; padding: .4rem; border: 1px solid transparent; background: transparent; }
+.vendedores__actions .producto__accion:hover { color: var(--nova-blue-dark); background: #eef0ff; border-color: var(--nova-border); }
+.vendedores__retry { text-align: center; }
+.vendedores__retry button { margin-bottom: 1rem; }
+.vendedores .catalogo__empty { margin: 0; }
+#vendedor-modal { width: min(34rem, calc(100% - 1rem)); }
+.vendedores__check { display: inline-flex; align-items: center; gap: .45rem; font-weight: 600; }
+.vendedores__check input { accent-color: var(--nova-blue); }
+.vendedores__hint { margin: .35rem 0 0; color: var(--nova-muted); }
+.vendedores__form-error { margin-top: 0; margin-bottom: 1rem; }
+@media (max-width: 600px) {
+  .vendedores .catalogo__kpis { gap: .4rem; }
+  .vendedores .kpi { padding: .7rem .45rem; }
+  .vendedores .kpi__icon { display: none; }
+  .vendedores__actions { justify-content: flex-start; }
+}

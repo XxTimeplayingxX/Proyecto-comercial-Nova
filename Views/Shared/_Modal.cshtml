@@ -6,8 +6,11 @@
     </header>
     <div class="nova-modal__body"><partial name="@Model.ContentPartial" /></div>
     <footer class="nova-modal__footer">
-        <span><span class="required">*</span> Campos obligatorios</span>
-        <div><button type="button" class="catalogo__secondary" data-modal-close>Cancelar</button>
+        @if (Model.FormId is not null)
+        {
+            <span><span class="required">*</span> Campos obligatorios</span>
+        }
+        <div><button type="button" class="catalogo__secondary" data-modal-close>@(Model.FormId is null ? "Cerrar" : "Cancelar")</button>
         @if (Model.FormId is not null)
         {
             <button type="submit" form="@Model.FormId" class="catalogo__primary" data-modal-submit>@Model.SubmitText</button>

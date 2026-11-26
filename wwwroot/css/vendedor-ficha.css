@@ -1,0 +1,47 @@
+.ficha { width: min(100%, 59rem); margin-inline: auto; }
+.ficha a { text-decoration: none; }
+.ficha__nav, .ficha__footer { display: flex; align-items: center; justify-content: space-between; gap: .65rem; flex-wrap: wrap; }
+.ficha__nav { color: var(--nova-muted); font-size: .75rem; margin-bottom: 1rem; }
+.ficha__nav a { color: var(--nova-blue-dark); }
+.ficha__nav .catalogo__secondary, .ficha__footer a { display: inline-flex; align-items: center; }
+.ficha__header { margin-bottom: 1.1rem; }
+.ficha__header p, .ficha__credential p { margin: .25rem 0 0; color: var(--nova-muted); font-size: .8rem; }
+.ficha__badge { display: inline-block; margin-bottom: .55rem; padding: .22rem .48rem; border-radius: 1rem; color: var(--nova-blue-dark); background: #e9edff; font-size: .65rem; font-weight: 650; }
+.ficha__form { padding: clamp(1rem, 3vw, 2.2rem); border: 1px solid #efedf7; border-radius: .9rem; background: #fff; }
+.ficha fieldset { min-width: 0; padding: 0; margin: 0; border: 0; }
+.ficha__section + .ficha__section { margin-top: 1.6rem; padding-top: 1.15rem; border-top: 1px solid var(--nova-border); }
+.ficha__section h2 { display: flex; align-items: center; gap: .5rem; margin: 0 0 1.1rem; padding: .65rem .75rem; border-radius: .45rem; background: #f0f2ff; font-size: .85rem; }
+.ficha__section h2 svg { width: 1rem; height: 1rem; fill: none; stroke: var(--nova-blue-dark); stroke-width: 1.7; }
+.ficha__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; }
+.ficha__grid > label, .ficha__roles legend { min-width: 0; font-size: .74rem; font-weight: 600; }
+.ficha__wide { grid-column: 1 / -1; }
+.ficha__grid input:not([type=radio]) { display: block; width: 100%; margin-top: .35rem; padding: .6rem .75rem; }
+.ficha__roles { margin-top: 1rem !important; }
+.ficha__roles label { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .3rem .45rem; padding: .75rem; border: 1px solid var(--nova-border); border-radius: .6rem; cursor: pointer; }
+.ficha__roles label:has(:checked) { background: #edf0ff; border-color: #cbd5ff; }
+.ficha__roles legend { margin-bottom: .45rem; }
+.ficha__roles input, .ficha__status input { width: auto; height: auto; margin: 0; accent-color: var(--nova-blue); }
+.ficha__roles small, .ficha__status small { display: block; color: var(--nova-muted); font-size: .7rem; font-weight: 400; line-height: 1.5; }
+.ficha__roles small { grid-column: 2; }
+.ficha__password { position: relative; display: block; }
+.ficha__password input { padding-right: 3rem !important; }
+.ficha__password button { position: absolute; inset: 0 .4rem 0 auto; border: 0; background: transparent; color: var(--nova-blue-dark); font: inherit; }
+.ficha__hint, .ficha__feedback { line-height: 1.5; font-size: .74rem; }
+.ficha__hint { margin: .45rem 0; color: var(--nova-muted); }
+.ficha__callout { display: block; margin: .85rem 0 0; padding: .85rem; border-radius: .55rem; background: #f0f2ff; font-size: .78rem; line-height: 1.5; }
+.ficha__callout a { color: var(--nova-blue-dark); text-decoration: underline; }
+.ficha__status, .ficha__credential { display: flex; align-items: center; justify-content: space-between; gap: .65rem; flex-wrap: wrap; }
+.ficha__status input { width: 2.5rem; height: 1.35rem; appearance: none; border: 1px solid #818da7; background: #e1e6f1; border-radius: 2rem; cursor: pointer; }
+.ficha__status input:checked { background: var(--nova-blue); border-color: var(--nova-blue); }
+.ficha__status input::before { content: ""; display: block; width: .95rem; height: .95rem; margin: .12rem; border-radius: 50%; background: white; }
+.ficha__status input:checked::before { margin-inline-start: 1.2rem; }
+#ficha-estado { color: var(--nova-blue-dark); }
+.ficha__performance span { display: block; color: var(--nova-blue-dark); }
+.ficha__performance summary { color: var(--nova-blue-dark); cursor: pointer; margin-top: .5rem; font-weight: 600; }
+.ficha__performance ul { padding-inline-start: 1.4rem; }
+.ficha__performance li { padding-block: .2rem; }
+.ficha__footer { justify-content: flex-end; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--nova-border); }
+.ficha__feedback { padding: .75rem; margin: 0 0 .85rem; border-radius: .5rem; background: #eef3ff; color: var(--nova-blue-dark); }
+.ficha__feedback[data-error] { background: #fff0ef; color: #9c2522; }
+.ficha__reset { padding: 1rem; }
+@media (max-width: 600px) { .ficha__grid { grid-template-columns: 1fr; } }

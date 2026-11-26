@@ -48,10 +48,10 @@
 .workspace__nav a[aria-current="page"] { background: var(--workspace-selected); color: var(--nova-blue-dark); }
 .workspace__nav a { transition: background .18s ease, color .18s ease, box-shadow .18s ease; }
 .workspace__nav a[aria-current="page"] { color: #fff; background: var(--nova-blue); box-shadow: 0 4px 12px #2563eb20; }
-.workspace__sidebar-footer { display: flex; align-items: center; gap: .6rem; margin-top: auto; padding: 1rem .4rem .2rem; border-top: 1px solid var(--workspace-line); }
-.workspace__footer-mark { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: .6rem; background: #eef2ff; color: var(--nova-blue-dark); font-weight: 700; }
-.workspace__sidebar-footer strong, .workspace__sidebar-footer div span { display: block; font-size: .68rem; }
-.workspace__sidebar-footer div span { margin-top: .2rem; color: var(--nova-muted); font-size: .6rem; }
+.workspace__logout { margin-top: auto; padding-top: .7rem; border-top: 1px solid var(--workspace-line); }
+.workspace__logout button { display: flex; align-items: center; gap: .55rem; min-height: 2.6rem; padding: .55rem .65rem; border: 0; border-radius: .55rem; color: #a32726; background: transparent; font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; }
+.workspace__logout button:hover { background: #fff1f0; }
+.workspace__logout svg { width: 1.15rem; height: 1.15rem; }
 .workspace__main { min-width: 0; }
 .workspace__header-start { display: flex; align-items: center; gap: .65rem; min-width: 0; }
 .workspace__menu-toggle, .workspace__menu-close { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; flex: none; padding: .65rem; border: 1px solid var(--nova-border); border-radius: .6rem; color: var(--nova-blue-dark); background: #f7f9ff; cursor: pointer; }
@@ -63,7 +63,7 @@
 .workspace__drawer[open] { animation: workspace-drawer-in .22s ease-out; }
 .workspace__drawer-heading { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
 .workspace__drawer-heading .brand { font-size: .9rem; }
-.workspace__drawer-note { margin: 2rem .5rem; color: var(--nova-muted); font-size: .7rem; }
+.workspace__drawer .workspace__logout { margin-top: 1rem; }
 body:has(.workspace__drawer[open]) { overflow: hidden; }
 .workspace :is(button, a):focus-visible { outline: 2px solid var(--nova-blue); outline-offset: 3px; }
 @keyframes workspace-drawer-in { from { transform: translateX(-100%); opacity: .6; } to { transform: translateX(0); opacity: 1; } }

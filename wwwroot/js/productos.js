@@ -91,9 +91,23 @@
     const actions = document.createElement('div'); actions.className = 'producto__acciones';
     const icons = {
       detalle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
-      editar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z"/></svg>'
+      editar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z"/></svg>',
+      stock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 7h12v14H3zM2 3h14v4H2zM6 11h5m8 1v8m-4-4h8"/></svg>',
+      historial: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 12a9 9 0 1 1 2.5 6.3M3 6v6h6m3-5v5l3 2"/></svg>'
     };
-    for (const [kind, label, handler] of [['detalle', 'Ver detalles', () => detail(product.id)], ['editar', 'Editar producto', () => document.dispatchEvent(new CustomEvent('nova:editar-producto', { detail: { id: product.id } }))]]) {
+    const rowActions = [
+      ['detalle', 'Ver detalles', () => detail(product.id)],
+      ['editar', 'Editar producto', () => document.dispatchEvent(new CustomEvent('nova:editar-producto', { detail: { id: product.id } }))],
+      ['stock', 'Agregar stock', () => document.dispatchEvent(new CustomEvent('nova:agregar-stock', {
+        detail: { product, thumbnail: image(product), status: badge(product), price: money.format(product.precio) }
+      }))]
+    ];
+    if ($('trazabilidad')) {
+      rowActions.push(['historial', 'Ver trazabilidad', () => document.dispatchEvent(new CustomEvent('nova:ver-trazabilidad', {
+        detail: { id: product.id, nombre: product.nombre, sku: product.sku }
+      }))]);
+    }
+    for (const [kind, label, handler] of rowActions) {
       const button = document.createElement('button'); button.type = 'button'; button.className = 'producto__accion';
       button.innerHTML = icons[kind]; // Static SVG only; product data uses text/attributes.
       button.title = label; button.setAttribute('aria-label', `${label}: ${product.nombre}`);
@@ -190,5 +204,6 @@
   });
   document.addEventListener('nova:producto-creado', () => { page = 1; loadList(); loadKpis(); });
   document.addEventListener('nova:producto-editado', () => { loadList(); loadKpis(); });
+  document.addEventListener('nova:stock-actualizado', () => { loadList(); loadKpis(); });
   loadList(); loadKpis(); loadFilters();
 })();

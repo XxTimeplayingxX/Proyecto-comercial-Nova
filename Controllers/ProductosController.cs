@@ -1,3 +1,4 @@
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Nova.Dtos;
 using Nova.Infrastructure;
@@ -7,6 +8,32 @@ namespace Nova.Controllers;
 [Route("api/productos")]
 public sealed class ProductosController(SupabaseCatalogoService catalogo) : CatalogoControllerBase
 {
+    [HttpPost("{id:long}/stock")]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> AgregarStock(long id, [FromBody] StockEntradaInput input, CancellationToken ct) => ConsultarAsync(async () =>
+    {
+        if (id <= 0) return Problem(statusCode: 400, title: "El identificador del producto no es válido.");
+        if (!StockEntradaInput.Motivos.Contains(input.Motivo))
+            return Problem(statusCode: 400, title: "Selecciona un motivo de ingreso válido.");
+        try
+        {
+            var stock = await catalogo.AgregarStockAsync(id, input, ct);
+            return Ok(new { id, stock });
+        }
+        catch (SupabaseCatalogoException ex) when (ex.Status == HttpStatusCode.Forbidden)
+        {
+            return Problem(statusCode: 403, title: "Solo un administrador con perfil activo puede agregar stock.");
+        }
+        catch (SupabaseCatalogoException ex) when (ex.Code == "PT409")
+        {
+            return Problem(statusCode: 409, title: "El producto ya no está disponible para registrar el ingreso.");
+        }
+        catch (SupabaseCatalogoException ex) when (ex.Code == "22003")
+        {
+            return Problem(statusCode: 409, title: "La cantidad supera el stock máximo admitido para este producto.");
+        }
+    });
+
     [HttpPatch("{id:long}")]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> Editar(long id, [FromBody] CrearProductoInput input, CancellationToken ct) => ConsultarAsync(async () =>

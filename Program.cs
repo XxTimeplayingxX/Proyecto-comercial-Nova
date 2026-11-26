@@ -17,6 +17,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<SupabaseCatalogoService>();
 builder.Services.AddScoped<SupabaseVentasService>();
 builder.Services.AddScoped<SupabaseStorageService>();
+builder.Services.AddScoped<SupabasePersonalService>();
+builder.Services.AddHttpClient<SupabaseAuthAdminService>(client => client.Timeout = TimeSpan.FromSeconds(15))
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false, UseCookies = false });
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -31,6 +34,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         {
             if (context.Request.Path.StartsWithSegments("/api")) context.Response.StatusCode = 401;
             else context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
+        options.Events.OnRedirectToAccessDenied = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
         };
     });

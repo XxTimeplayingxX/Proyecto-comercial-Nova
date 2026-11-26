@@ -9,6 +9,9 @@
     { "key": "storage_object_path", "value": "" },
     { "key": "storage_user_id", "value": "" },
     { "key": "storage_object_name", "value": "" },
+    { "key": "trace_cursor", "value": "" },
+    { "key": "staff_operation_id", "value": "" },
+    { "key": "staff_test_password", "value": "" },
     {
       "key": "venta_request_id",
       "value": ""
@@ -195,7 +198,7 @@
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
             "url": "{{nova_base_url}}/Login",
-            "description": "Envía el formulario con el token y cookie obtenidos en el paso anterior. Login válido crea Nova.Session y redirige a bienvenida. Un formulario rechazado puede responder HTML 200 con aviso; eso no confirma sesión. Después ejecutar GET /Productos para obtener el token asociado a la identidad autenticada. No introducir JWT en estas rutas locales.",
+            "description": "Envía el formulario con el token y cookie del paso anterior. Requiere credenciales de Supabase Auth y perfil Nova activo (admin/seller). Login válido 302 crea Nova.Session con el rol comercial. Formulario rechazado puede responder HTML 200 con aviso. 400 si falla antifalsificación. Después ejecutar GET /Productos para obtener el token asociado a la identidad autenticada.",
             "body": { "mode": "urlencoded", "urlencoded": [
               { "key": "Email", "value": "{{email}}", "type": "text" },
               { "key": "Password", "value": "{{password}}", "type": "text" },
@@ -239,6 +242,142 @@
             "url": "{{nova_base_url}}/api/productos/{{product_id}}",
             "description": "API local nueva. Requiere cookie Nova.Session, antifalsificación y administrador activo. product_id debe ser positivo. Recibe el formulario completo con las validaciones del alta; tomar valores actuales de GET detalle antes de editar. sku se requiere por DTO compartido, pero se ignora en el PATCH saliente: permanece inmutable; stock nunca se escribe. imagen=null desvincula imagen sin borrar Storage. Envía PATCH /rest/v1/products?id=eq.ID&select=id con JWT del usuario y Prefer:return=representation. 200:{id}; 400: campos/antifalsificación/referencias; 401: sesión; 403: permisos; 404: ninguna fila actualizada (inexistente o no autorizada); 409: conflicto; 502/503: externo. No hay reintentos automáticos ni API local de ajustes o carga de imágenes en esta entrega.",
             "body": { "mode": "raw", "raw": "{\n  \"nombre\": \"Producto actualizado\",\n  \"sku\": \"SKU-ACTUAL\",\n  \"categoriaId\": 1,\n  \"marcaId\": 1,\n  \"precio\": 499.99,\n  \"stockMinimo\": 5,\n  \"activo\": true,\n  \"descripcion\": \"Descripción actualizada\",\n  \"imagen\": null\n}", "options": { "raw": { "language": "json" } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Nova local — entradas de inventario",
+      "description": "Reutiliza el login mediante cookie y la obtención del token antifalsificación de Nova local — catálogo. Usa un producto de prueba, porque la operación registra un movimiento de inventario.",
+      "item": [
+        {
+          "name": "Agregar stock desde Nova",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "url": "{{nova_base_url}}/api/productos/{{product_id}}/stock",
+            "description": "Requiere cookie Nova.Session, token antifalsificación y perfil administrador activo. product_id positivo. cantidad: entero positivo hasta 2147483647, incluido el total resultante en ese límite. motivo: Ingreso de mercadería, Devolución, Corrección de inventario u Otro. puntoIngreso opcional hasta 100 caracteres y observaciones opcionales hasta 250. Ambos se adjuntan al motivo del movimiento y se muestran en trazabilidad. 200: {id,stock} confirmado por adjust_stock. 400: campos/antifalsificación, 401: sesión, 403: permisos, 409: producto inexistente o total fuera de rango, 502/503: confirmación incierta. Ante una respuesta incierta, verifica el historial antes de registrar nuevamente el ingreso.",
+            "body": { "mode": "raw", "raw": "{\n  \"cantidad\": 5,\n  \"motivo\": \"Ingreso de mercadería\",\n  \"puntoIngreso\": \"Bodega central\",\n  \"observaciones\": \"Lote de prueba\"\n}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Consultar trazabilidad",
+          "request": {
+            "method": "GET", "header": [], "url": "{{nova_base_url}}/api/productos/{{product_id}}/trazabilidad",
+            "description": "API local con Nova.Session y administrador activo. product_id positivo. Para la siguiente página añade ?antesDe={{trace_cursor}} con el valor de siguiente. 200: {producto:{nombre,sku,alta},siguiente,items:[{tipo,fecha,cantidad,stockAnterior,stockNuevo,motivo,responsable,venta}]}, hasta 20 filas por ID descendente. venta es null o {id,estado,vendedor,comprador}; comprador puede ser null. 400 parámetros, 401 sesión, 403 permisos, 404 producto, 502/503 externo."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Nova local — vendedores",
+      "description": "Usar la sesión de un administrador activo obtenida con el login de Nova local — catálogo. Las escrituras deben usar cuentas y perfiles de prueba.",
+      "item": [
+        {
+          "name": "Cerrar sesión de Nova",
+          "request": {
+            "method": "POST", "url": "{{nova_base_url}}/Login/Salir",
+            "header": [{ "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "description": "Cookie Nova.Session y token antifalsificación obtenido tras iniciar sesión. Sin cuerpo. 302 elimina la cookie local y dirige a login. Sin sesión redirige a /Login; 400 antifalsificación inválida."
+          }
+        },
+        {
+          "name": "Obtener token antifalsificación de Vendedores",
+          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["const match = pm.response.text().match(/name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"/);", "if (pm.response.code === 200 && match) pm.collectionVariables.set('antiforgery_token', match[1]);"] } }],
+          "request": { "method": "GET", "header": [], "url": "{{nova_base_url}}/Vendedores", "description": "Cookie Nova.Session. 200 HTML con token para POST/PATCH. Sin sesión redirige a /Login. 403 sin rol administrador." }
+        },
+        {
+          "name": "Listar perfiles comerciales",
+          "request": { "method": "GET", "header": [], "url": "{{nova_base_url}}/api/vendedores", "description": "Cookie Nova.Session y administrador activo. 200 {total,activos,inactivos,items:[{id,nombre,apellido,email,role,activo,ventas,total}]}. Métricas acumuladas de ventas completadas. 401 sesión; 403 permisos; 502/503 Supabase." }
+        },
+        {
+          "name": "Vincular vendedor",
+          "request": {
+            "method": "POST", "url": "{{nova_base_url}}/api/vendedores",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "description": "Cookie Nova.Session y administrador activo. usuarioId es un User UID de Supabase Auth con correo confirmado y contraseña. nombre/apellido: 1 a 80 caracteres. 201 {id}. 400 datos/antifalsificación; 401 sesión; 403 permisos; 409 usuario no vinculable; 502/503 confirmación incierta.",
+            "body": { "mode": "raw", "raw": "{\"usuarioId\":\"{{profile_id}}\",\"nombre\":\"Vendedor\",\"apellido\":\"Prueba\"}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Editar o desactivar vendedor",
+          "request": {
+            "method": "PATCH", "url": "{{nova_base_url}}/api/vendedores/{{profile_id}}",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "description": "Cookie Nova.Session y administrador activo. profile_id debe ser un UUID de perfil seller. nombre y apellido de 1 a 80 caracteres, activo booleano obligatorio. 200 {id}; 400 datos/antifalsificación; 401 sesión; 403 permisos; 404 perfil no editable; 502/503 confirmación incierta.",
+            "body": { "mode": "raw", "raw": "{\"nombre\":\"Vendedor\",\"apellido\":\"Prueba\",\"activo\":false}", "options": { "raw": { "language": "json" } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Nova local — fichas de cuenta",
+      "description": "Administrador activo con Nova.Session y antifalsificación obtenida de /Vendedores. Usar cuentas de prueba y valores locales de contraseña. El alta y los cambios de credenciales dependen de la configuración de Auth Admin en el servidor.",
+      "item": [
+        {
+          "name": "Detalle de cuenta",
+          "request": { "method": "GET", "header": [], "url": "{{nova_base_url}}/api/vendedores/{{profile_id}}", "description": "UUID de perfil. 200 {id,nombre,apellido,email,role,activo,ventas,total,propio}. 401 sesión; 403 permisos; 404 perfil; 502/503 externo." }
+        },
+        {
+          "name": "Desglose de comprobantes",
+          "request": { "method": "GET", "header": [], "url": "{{nova_base_url}}/api/vendedores/{{profile_id}}/comprobantes", "description": "UUID de perfil y antesDe opcional con cursor siguiente previo. 200 {siguiente,items:[{id,fecha,total}]}, hasta 20 ventas completadas por ID descendente. 400 cursor; 401 sesión; 403 permisos; 502/503 externo." }
+        },
+        {
+          "name": "Crear cuenta",
+          "request": {
+            "method": "POST", "url": "{{nova_base_url}}/api/vendedores/alta",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "description": "operacionId UUID nuevo para el alta y mismo UUID para recuperar una interrupción. Nombres de 1 a 80, correo válido, rol seller/admin, activo booleano, clave y confirmacion iguales con al menos 8 caracteres y un número, máximo 72 bytes. 201 {id}; 400 datos/CSRF; 401 sesión; 403 permisos; 409 conflicto; 502/503 externo o Auth Admin sin configurar.",
+            "body": { "mode": "raw", "raw": "{\"operacionId\":\"{{staff_operation_id}}\",\"nombre\":\"Vendedor\",\"apellido\":\"Prueba\",\"email\":\"{{email}}\",\"rol\":\"seller\",\"activo\":true,\"clave\":\"{{staff_test_password}}\",\"confirmacion\":\"{{staff_test_password}}\"}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Editar cuenta",
+          "request": {
+            "method": "PATCH", "url": "{{nova_base_url}}/api/vendedores/{{profile_id}}/cuenta",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "description": "UUID de otro perfil. Nombres de 1 a 80, correo válido, rol seller/admin y activo booleano. 200 {id}; 400 datos/CSRF; 401 sesión; 403 permisos o cuenta propia; 404 perfil; 409 conflicto de correo; 502/503 confirmación incierta o Auth Admin sin configurar.",
+            "body": { "mode": "raw", "raw": "{\"nombre\":\"Vendedor\",\"apellido\":\"Prueba\",\"email\":\"{{email}}\",\"rol\":\"seller\",\"activo\":false}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Restablecer contraseña",
+          "request": {
+            "method": "POST", "url": "{{nova_base_url}}/api/vendedores/{{profile_id}}/clave",
+            "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
+            "description": "UUID de otro perfil. Clave y confirmación iguales, mínimo 8 caracteres y un número, máximo 72 bytes. 204 sin cuerpo; 400 validación/CSRF; 401 sesión; 403 permisos o cuenta propia; 404 perfil; 502/503 externo.",
+            "body": { "mode": "raw", "raw": "{\"clave\":\"{{staff_test_password}}\",\"confirmacion\":\"{{staff_test_password}}\"}", "options": { "raw": { "language": "json" } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supabase — directorio y vinculación",
+      "item": [
+        {
+          "name": "Completar alta o actualizar perfil comercial",
+          "request": {
+            "method": "POST", "url": "{{base_url}}/rest/v1/rpc/nova_complete_staff_account",
+            "header": [{ "key": "apikey", "value": "{{api_key}}" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "description": "JWT de administrador activo. nova_complete_staff_account requiere que Auth vincule el UUID al administrador que inició el alta. nova_update_staff_profile usa el mismo cuerpo, conserva RLS y excluye la cuenta propia. 200 UUID; 400 datos; 401 JWT; 403 permisos; 404 perfil inexistente al editar; 409 perfil incompatible al completar.",
+            "body": { "mode": "raw", "raw": "{\"p_id\":\"{{profile_id}}\",\"p_first_name\":\"Vendedor\",\"p_last_name\":\"Prueba\",\"p_role\":\"seller\",\"p_active\":true}", "options": { "raw": { "language": "json" } } }
+          }
+        },
+        {
+          "name": "Consultar directorio comercial",
+          "request": {
+            "method": "GET", "url": "{{base_url}}/rest/v1/rpc/nova_seller_directory?order=last_name.asc,first_name.asc,id.asc&limit=200&offset=0",
+            "header": [{ "key": "apikey", "value": "{{api_key}}" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "description": "Data API directa con JWT de administrador activo. 200 array de id,first_name,last_name,email,role,is_active,sales_count,total. Soporta order, limit y offset. 401 JWT; 403 rol; fallos externos 5xx."
+          }
+        },
+        {
+          "name": "Vincular cuenta Auth a perfil seller",
+          "request": {
+            "method": "POST", "url": "{{base_url}}/rest/v1/rpc/nova_link_seller",
+            "header": [{ "key": "apikey", "value": "{{api_key}}" }, { "key": "Authorization", "value": "Bearer {{access_token}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "description": "Data API directa con JWT de administrador activo. p_auth_id UUID, p_first_name/p_last_name 1 a 80 caracteres. 200 UUID del perfil; 400 nombre; 401 JWT; 403 permisos; 409 cuenta no vinculable o duplicada; fallos externos 5xx. Usar cuenta de prueba.",
+            "body": { "mode": "raw", "raw": "{\"p_auth_id\":\"{{profile_id}}\",\"p_first_name\":\"Vendedor\",\"p_last_name\":\"Prueba\"}", "options": { "raw": { "language": "json" } } }
           }
         }
       ]

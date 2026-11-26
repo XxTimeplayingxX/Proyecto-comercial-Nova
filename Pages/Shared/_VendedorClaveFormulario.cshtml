@@ -1,0 +1,9 @@
+<form id="ficha-clave-form" class="ficha__reset" method="post">
+    @Html.AntiForgeryToken()
+    <fieldset id="ficha-clave-campos" class="ficha__grid">
+        <label>Nueva contraseña <span class="required">*</span><input name="clave" type="password" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+        <label>Confirmar contraseña <span class="required">*</span><input name="confirmacion" type="password" minlength="8" maxlength="72" autocomplete="new-password" required></label>
+    </fieldset>
+    <p class="ficha__hint">Mínimo 8 caracteres y al menos un número.</p>
+    <p id="ficha-clave-error" class="ficha__feedback" role="alert" hidden></p>
+</form>

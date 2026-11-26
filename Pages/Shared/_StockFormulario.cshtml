@@ -1,0 +1,65 @@
+@using Nova.Dtos
+<form id="stock-form" class="producto-form stock-form">
+    @Html.AntiForgeryToken()
+    <div class="stock-form__product">
+        <div class="producto">
+            <div id="stock-imagen"></div>
+            <div>
+                <strong class="producto__nombre" id="stock-producto"></strong>
+                <span class="producto__sku" id="stock-sku"></span>
+                <span class="producto__sku" id="stock-categoria"></span>
+            </div>
+        </div>
+        <div class="stock-form__metadata">
+            <div id="stock-estado"></div>
+            <span class="producto__sku" id="stock-marca"></span>
+            <span class="producto__sku" id="stock-precio"></span>
+        </div>
+    </div>
+
+    <dl class="stock-form__summary" aria-live="polite" aria-atomic="true">
+        <div><dt>Stock actual</dt><dd id="stock-actual"></dd></div>
+        <div><dt>A ingresar</dt><dd id="stock-ingreso"></dd></div>
+        <div><dt>Stock estimado</dt><dd id="stock-estimado"></dd></div>
+    </dl>
+
+    <fieldset id="stock-campos">
+        <div class="producto-form__field">
+            <div class="producto-form__label-row">
+                <label for="stock-cantidad">Cantidad a ingresar <span class="required">*</span></label>
+                <small id="stock-ayuda">Solo enteros mayores a 0</small>
+            </div>
+            <div class="stock-form__controls">
+                <div class="stock-form__stepper">
+                    <button type="button" class="catalogo__secondary" data-stock-step="-1" aria-label="Restar una unidad">−</button>
+                    <input id="stock-cantidad" name="cantidad" type="number" inputmode="numeric" value="1" min="1" max="2147483647" step="1" required aria-describedby="stock-ayuda">
+                    <button type="button" class="catalogo__secondary" data-stock-step="1" aria-label="Sumar una unidad">+</button>
+                </div>
+                <div class="stock-form__shortcuts">
+                    <button type="button" class="catalogo__secondary" data-stock-step="5" aria-label="Sumar cinco unidades">+5</button>
+                    <button type="button" class="catalogo__secondary" data-stock-step="10" aria-label="Sumar diez unidades">+10</button>
+                    <button type="button" class="catalogo__secondary" data-stock-step="20" aria-label="Sumar veinte unidades">+20</button>
+                </div>
+            </div>
+        </div>
+        <div class="producto-form__field">
+            <label for="stock-motivo">Motivo del ingreso <span class="required">*</span></label>
+            <select id="stock-motivo" name="motivo" required>
+                @foreach (var motivo in StockEntradaInput.Motivos)
+                {
+                    <option value="@motivo">@motivo</option>
+                }
+            </select>
+        </div>
+        <div class="producto-form__field">
+            <label for="stock-punto">Punto de ingreso <small class="producto-form__optional">Opcional</small></label>
+            <input id="stock-punto" name="puntoIngreso" maxlength="100" placeholder="Ej. Bodega central o sucursal norte">
+        </div>
+        <div class="producto-form__field">
+            <label for="stock-observaciones">Observaciones <small class="producto-form__optional">Opcional</small></label>
+            <textarea id="stock-observaciones" name="observaciones" rows="2" maxlength="250" placeholder="Ej. Número de comprobante o lote"></textarea>
+        </div>
+    </fieldset>
+    <p class="stock-form__info">El historial de inventario guardará el ingreso con tu usuario, la fecha y el motivo.</p>
+    <p class="producto-form__error stock-form__error" id="stock-error" role="alert" hidden></p>
+</form>
