@@ -91,6 +91,27 @@ Abre [http://localhost:5180](http://localhost:5180) para iniciar sesión. Para v
 
 ## Configurar el login de Supabase
 
+### Después de clonar: «Falta configurar la conexión con Supabase»
+
+Este mensaje corresponde a una validación local de configuración, anterior a enviar las credenciales a Supabase. `appsettings.Local.json` está excluido de Git, por lo que cada integrante debe configurar su equipo. No indica por sí mismo una contraseña incorrecta.
+
+Crear `appsettings.Local.json` en la raíz, junto a `Nova.csproj`, con los valores del proyecto Supabase compartido por el equipo:
+
+```json
+{
+  "Supabase": {
+    "ProjectUrl": "https://TU-PROYECTO.supabase.co",
+    "PublishableKey": "sb_publishable_REEMPLAZAR"
+  }
+}
+```
+
+Los textos anteriores son marcadores: reemplazarlos por valores reales. La URL debe ser HTTPS y el código actual exige una clave que comience con `sb_publishable_`. No usar una clave secreta, `service_role` ni Auth Admin en ese campo. No es necesario crear otro proyecto Supabase para cada integrante.
+
+Detener y volver a iniciar desde PowerShell con `.\iniciar.cmd`; alternativa: `dotnet run --project Nova.csproj`. El perfil local activa Development, donde se lee este archivo. Fuera de Development, configurar mediante variables de entorno. Si persiste el mensaje, comprobar ubicación/nombre del archivo (sin extensión `.txt`), valores y variables `Supabase__ProjectUrl` / `Supabase__PublishableKey` que puedan sobrescribirlo. No publicar el archivo local.
+
+Superada la configuración, el usuario debe existir en Auth y tener un perfil comercial activo para entrar. La clave Auth Admin solo es necesaria para operaciones de administración de credenciales; no para el login normal. La corrección en la máquina del compañero queda pendiente de que configure y reinicie.
+
 Usa la URL del proyecto y su clave publicable. En desarrollo puedes guardarlas en `appsettings.Local.json`, excluido de Git y de la publicación. Las variables de entorno tienen prioridad y también sirven fuera de desarrollo:
 
 ```powershell
