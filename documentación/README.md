@@ -1,5 +1,13 @@
 # Comercial Nova — API
 
+## Caso académico y defensa
+
+[Matriz de relación con el caso de estudio](Caso_de_estudio.md): diagnóstico, seis problemas, arquitectura, POO/MVC, alternativas tecnológicas y evidencia disponible. [Guía de sustentación](Defensa_del_proyecto.md): guion, demostración, respuestas a las cuatro preguntas del PDF y preparación previa a GitHub. Revisión del 2026-11-26 sin escrituras remotas ni publicación. No confundir pruebas simuladas con concurrencia real; la edición comercial de productos aún carece de control de versión.
+
+## Sesión y navegación
+
+`GET /api/sesion` devuelve perfil propio y metadatos de expiración, sin JWT. `POST /api/sesion/actividad` requiere cookie y antifalsificación y actualiza la última actividad sin extender la expiración absoluta. Aviso a 2 minutos, cierre a 3 minutos y sesión Nova de hasta 60 minutos o el vencimiento anterior del JWT. No se modificó el tiempo de token remoto. [Contrato y comprobaciones](Sesion.md); ejemplos en **Nova local — sesión** de Postman.
+
 ## Vendedores y trazabilidad
 
 `/Vendedores/Nuevo` y `/Vendedores/Editar/{id}` administran credenciales, perfil, estado y rol. La edición incluye ventas completadas y comprobantes. El servidor usa `Supabase__AuthAdminKey` únicamente para Auth Admin. [Contratos y configuración](Vendedores.md#alta-y-edición-desde-nova).

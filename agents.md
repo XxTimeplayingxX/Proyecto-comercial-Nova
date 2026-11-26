@@ -1,6 +1,6 @@
 # Contexto para agentes — Comercial Nova
 
-Última actualización: 2026-11-25.
+Última actualización: 2026-11-26.
 
 ## Propósito y mantenimiento
 
@@ -28,6 +28,7 @@ Flujo del catálogo: navegador → `/api/productos...` en Nova → servicio HTTP
 
 ## Frontend actual
 
+- Navegación y sesión: correo/avatar abre perfil propio; sidebar de escritorio ocultable y redimensionable de 200–340 px, con persistencia local e íconos animados. `workspace-controls.css`, `workspace.js`, `session.js` y layout compartido. Modal de inactividad a los 120 s, cierre a los 180 s, explícitamente acordado con el usuario. Respeta movimiento reducido. [Contrato](documentación/Sesion.md).
 - `Pages/Ventas.cshtml`: nueva venta con búsqueda/categorías, ocho skeletons por carga, carrito, cliente opcional, validación y confirmación. Estilos y lógica en `ventas.css` y `ventas.js`. Navegación responsive compartida en `_WorkspaceNav` y `workspace.js`; drawer modal hasta 900 px. Ver `documentación/Ventas.md`.
 - `Views/Login/Index.cshtml`: formulario de inicio de sesión; recursos en `wwwroot/css/login.css` y `wwwroot/js/login.js`.
 - `Pages/Index.cshtml`: bienvenida; el menú la presenta como Dashboard. No asumir que ya integra los indicadores de ventas.
@@ -36,7 +37,7 @@ Flujo del catálogo: navegador → `/api/productos...` en Nova → servicio HTTP
 - `Pages/Vendedores.cshtml` y `wwwroot/js/vendedores.js`: directorio administrativo, búsqueda, métricas, vinculación de una cuenta Auth existente y edición/activación de perfiles seller. [Guía y contrato](documentación/Vendedores.md).
 - `Pages/VendedorFicha.cshtml` expone `/Vendedores/Nuevo` y `/Vendedores/Editar/{id}` con credenciales, rol, estado y comprobantes. Auth Admin requiere `Supabase__AuthAdminKey` solo en el servidor. `SupabaseAuthAdminService` limita su uso a Auth. La Data API de perfiles conserva JWT de usuario y la vinculación manual por UID sigue disponible. [SQL de apoyo](documentación/vendedores_alta.sql).
 - **Ver trazabilidad** en las acciones del producto abre `_TrazabilidadProducto.cshtml` con alta, movimientos, vendedor y comprador registrado. El punto de ingreso opcional se guarda en el motivo de nuevos movimientos. [Contrato](documentación/Trazabilidad.md).
-- `Pages/NuestraHistoria.cshtml`: pantalla informativa.
+- `Pages/NuestraHistoria.cshtml`: timeline ficticio de Ernesto Salazar (1968, 1986, 2005 y 2026), quien comienza con baterías. Fotografías IA en blanco y negro `nova-story-*.png` dentro de `wwwroot/images/`; no son archivos del catálogo ni de Storage. `story.css` y `story.js`: etapas alternadas, navegación por año, progreso, revelado y parallax de ±24 px con requestAnimationFrame, estático hasta 700 px y con movimiento reducido. Ver `documentación/Historia.md`.
 - `Pages/NotFound.cshtml`: pantalla para rutas inexistentes con estado HTTP 404.
 - `Pages/Shared/_WorkspaceLayout.cshtml`: sidebar, cabecera y estructura compartida. Identidad visual azul y tipografía Inter; estilos comunes en `theme.css` y `site.css`.
 - `Views/Shared/_ToastStack.cshtml` y `wwwroot/js/toast.js`: notificaciones reutilizables de éxito, información, error y advertencia.
@@ -45,6 +46,7 @@ Mantener estados de carga, vacío y error recuperable. No inventar productos, fo
 
 ## Backend web actual
 
+- `NovaSessionPolicy` fija aviso 120 s, cierre por inactividad 180 s y máximo absoluto local 60 min, limitado por vencimiento real del token. CookieEvents rechaza cookies vencidas/antiguas sin metadatos. `GET /api/sesion` consulta perfil propio activo y devuelve tiempos sin JWT. `POST /api/sesion/actividad` exige antifalsificación y reemite cookie con igual expiración absoluta. Interacción humana reportada por JS; polling no renueva. No se cambió JWT expiry remoto ni se implementó refresh. `expires_in` y `expires_at` reales del login alimentan el panel de cuenta.
 - `Controllers/VentasController.cs`, `Dtos/VentaDto.cs`, `Infrastructure/SupabaseVentasService.cs`: búsqueda paginada para venta, clientes, validación sin escritura y registro por RPC. Nuevas APIs `GET /api/ventas/productos`, `GET /api/ventas/clientes`, `POST /api/ventas/validar`, `POST /api/ventas`. Sesión en todas y antifalsificación en POST; no aceptar precios ni vendedor del navegador.
 - El RPC `register_sale` ya existente toma precios, descuenta stock y escribe venta/detalle/movimientos de forma transaccional. Guardar UUID y pedido exacto antes de enviar; ante resultado incierto conservarlos en sessionStorage por usuario y reintentar directamente el RPC, sin prevalidar el stock ya descontado ni generar otro UUID. No agregar un reintento automático de escritura.
 - `Controllers/LoginController.cs` y `Infrastructure/SupabaseAuthService.cs`: login contra Supabase Auth; cookie cifrada `Nova.Session`, `HttpOnly`, con vencimiento ligado al token. La opción Recordarme permite persistencia hasta ese vencimiento. Actualmente se requiere iniciar sesión otra vez al expirar; no asumir renovación automática.
@@ -137,6 +139,9 @@ No se identificó un proyecto de pruebas automatizadas en la estructura revisada
 
 ## Documentos para retomar
 
+- [Caso de estudio y cobertura](documentación/Caso_de_estudio.md): diagnóstico del PDF académico, trazabilidad con código, conceptos del curso, comparación tecnológica y brechas.
+- [Defensa del proyecto](documentación/Defensa_del_proyecto.md): guion de diez minutos, demo válida/inválida, respuestas al PDF y evidencias pendientes antes de presentar/publicar.
+
 - [README principal](README.md): ejecución, login, estructura y comportamiento actual del catálogo.
 - [API y mantenimiento](documentación/README.md): contratos disponibles y estado documentado de Supabase.
 - [Productos: SQL y REST](documentación/Productos.md): vista, RPC, filtros, ejemplos y verificaciones registradas.
@@ -145,6 +150,11 @@ No se identificó un proyecto de pruebas automatizadas en la estructura revisada
 
 ## Última entrega
 
+- 2026-11-26: revisado el texto completo del PDF académico de cuatro páginas y contrastado con código/contratos. Añadidas matriz de los seis problemas, diagnóstico, arquitectura/POO/MVC, comparación de dos alternativas y guía de defensa con demo y preguntas del PDF. Límite destacado: PATCH comercial filtra solo por ID, sin versión esperada; concurrencia real de ventas pendiente y distinta de la idempotencia por UUID. Revisión exclusivamente documental, sin ejecutar aplicación, escrituras en Supabase, commit ni push. Las pruebas temporales históricas no son una suite versionada. Continuar con ensayos reales sobre datos de prueba y guardar evidencias saneadas; no afirmar que ya se completaron. Índices README actualizados; 29 enlaces locales comprobados, JSON Postman válido y diff sin errores de formato. Ninguna API modificada por esta tarea.
+
+- 2026-11-26: rediseñada Nuestra historia como timeline editorial del fundador ficticio Ernesto Salazar, con cuatro etapas y cuatro fotografías IA en blanco y negro guardadas en el proyecto. Humor discreto, ficción declarada y conservación de misión/visión/valores. Compilación y comprobaciones de Razor, recursos y parallax con DOM/geometría simulados aprobadas; imágenes inspeccionadas. Pendiente revisión visual del sitio en navegador. Documentación en `documentación/Historia.md`; no hay APIs nuevas ni cambios de contratos/Postman.
+- 2026-11-26: corregido espaciado del modal de vinculación (fieldset sin padding por regla compartida) mediante contenedor propio, inputs compactos y una columna en móvil. Confirmada ausencia de AuthAdminKey en configuración local/entorno revisado, sin mostrar valores. El alta sigue bloqueada sin esa clave; ahora muestra un aviso destacado antes del formulario y explicación accesible en el botón. Documentado diagnóstico y configuración segura en `documentación/Vendedores.md`. Compilación y nueve comprobaciones de HTML/Razor en host aislado aprobadas; inspección visual pendiente. No se configuraron secretos ni se crearon cuentas reales; no hay APIs nuevas ni cambios de contrato.
+- 2026-11-26: corregidos correo readonly en alta sin Auth Admin y centrado del switch. Sidebar desktop ocultable/redimensionable con teclado/arrastre, persistencia y movimiento de íconos. Panel de perfil propio y aviso de inactividad 2 min/cierre 3 min acordados. Límite local absoluto 60 min o expiración previa del token. Dos APIs de sesión documentadas en Postman y `documentación/Sesion.md`. Compilación y 33 comprobaciones en host temporal con cookies reales, Supabase/DOM/reloj simulados; sin cambios remotos. Requiere volver a iniciar sesión. La ausencia de AuthAdminKey sigue impidiendo crear credenciales; no se eludió ni configuró esa clave. Pendiente revisión visual real.
 - 2026-11-25: fichas completas de alta y edición conectadas al listado. Migración `nova_alta_cuentas_comerciales` aplicada y comprobada con datos de prueba revertidos. Pasaron 45 comprobaciones HTTP/Razor en host simulado. La clave de Auth Admin falta en la configuración local. Pendientes cambios reales de credenciales e inspección visual. [Guía](documentación/Vendedores.md).
 - 2026-11-25: implementados **Vendedores**, vinculación y edición de perfiles seller, validación de perfil activo en login, cierre de sesión y trazabilidad por producto. Migración `nova_vendedores_perfiles` aplicada. Prueba SQL por roles en transacción revertida y 31 comprobaciones HTTP/Razor con Supabase simulado aprobadas. Se comprobó la relación con movimientos para la venta registrada. Quedan pendientes una prueba con cuentas reales y revisión visual en navegador. Ver [Vendedores](documentación/Vendedores.md) y [Trazabilidad](documentación/Trazabilidad.md).
 - 2026-11-25: implementado **Agregar stock** y `POST /api/productos/{id}/stock` con el RPC existente `adjust_stock`. Firma, permisos y transacción verificados sin escrituras en Supabase. Compilación correcta y 21 comprobaciones con host aislado y Supabase simulado. Contrato y Postman actualizados. Pendientes inspección visual (control del navegador no disponible para la URL) y prueba con sesión real sobre datos de prueba.

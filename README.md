@@ -1,5 +1,19 @@
 # Nova
 
+## Caso de estudio y sustentación
+
+La [revisión del caso académico](documentación/Caso_de_estudio.md) relaciona los seis problemas con código, evidencia y pendientes; incluye arquitectura, conceptos del curso y comparación tecnológica. La [guía de defensa](documentación/Defensa_del_proyecto.md) propone una exposición de diez minutos, demo válida/inválida y respuestas a las preguntas del PDF. La concurrencia real de ventas sigue pendiente de ensayo y la edición de productos aún no detecta versiones obsoletas. Revisión documental del 2026-11-26, sin publicación en GitHub.
+
+## Nuestra historia
+
+`/NuestraHistoria` presenta un timeline ficticio de Ernesto Salazar, desde un mostrador de baterías hasta la tienda de tecnología actual. Incluye fotografías generadas en blanco y negro, navegación por cuatro etapas y parallax suave, desactivado en móvil y con movimiento reducido. [Relato, recursos y comprobaciones](documentación/Historia.md).
+
+## Sesión y navegación
+
+El correo/avatar abre **Mi cuenta**, con nombre, apellido, rol, duración emitida del token, tiempo restante y cierre de sesión. Nova avisa a los 2 minutos sin interacción y cierra a los 3 minutos si no se responde; la sesión dura como máximo 60 minutos o hasta que venza el token de Supabase, lo que ocurra primero. Volver a iniciar sesión después de esta actualización para aplicar los nuevos metadatos. No hay renovación automática del JWT.
+
+En escritorio se puede mostrar/ocultar el sidebar y ajustar su ancho desde el borde (también con teclado). En móvil se conserva el drawer. [Comportamiento, APIs y pruebas](documentación/Sesion.md).
+
 ## Nueva venta
 
 La opción **Ventas** abre `/Ventas`: catálogo con búsqueda por nombre/SKU, categorías, skeletons por tarjeta, carrito y cliente opcional. Primero **Validar pedido** consulta precios y stock reales; después **Confirmar venta** usa el RPC transaccional existente. Las operaciones sin respuesta conservan su UUID para recuperarse sin duplicar la venta. La barra lateral usa un drawer en móvil y el resumen se adapta a pantallas pequeñas.

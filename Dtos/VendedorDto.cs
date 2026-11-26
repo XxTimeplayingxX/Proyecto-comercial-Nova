@@ -3,7 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace Nova.Dtos;
 
-public sealed record PerfilAccesoDto(string Role);
+public sealed record PerfilAccesoDto(string Role,
+    [property: System.Text.Json.Serialization.JsonPropertyName("first_name")] string? Nombre = null,
+    [property: System.Text.Json.Serialization.JsonPropertyName("last_name")] string? Apellido = null);
 public sealed record ComprobanteVendedorDto(long Id, [property: JsonPropertyName("created_at")] DateTimeOffset Fecha, decimal Total);
 
 public sealed record VendedorDto(Guid Id,

@@ -12,7 +12,7 @@ public sealed class SupabasePersonalService(IHttpClientFactory clients, IHttpCon
     public async Task<PerfilAccesoDto?> PerfilActivoAsync(Guid id, string token, CancellationToken ct)
     {
         var rows = await EnviarAsync<List<PerfilAccesoDto>>(HttpMethod.Get,
-            $"profiles?id=eq.{id:D}&is_active=eq.true&select=role", null, ct, token);
+            $"profiles?id=eq.{id:D}&is_active=eq.true&select=role,first_name,last_name", null, ct, token);
         return rows.SingleOrDefault();
     }
 

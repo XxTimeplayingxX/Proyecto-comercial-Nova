@@ -74,9 +74,11 @@ public sealed class LoginController(SupabaseAuthService authService, SupabasePer
 
         var properties = new AuthenticationProperties
         {
-            IsPersistent = input.RememberMe,
-            ExpiresUtc = DateTimeOffset.FromUnixTimeSeconds(session.ExpiresAt)
+            IsPersistent = input.RememberMe
         };
+        NovaSessionPolicy.Start(properties, DateTimeOffset.FromUnixTimeSeconds(session.ExpiresAt), DateTimeOffset.UtcNow);
+        if (session.ExpiresIn is > 0)
+            properties.Items["nova:token_lifetime"] = session.ExpiresIn.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
         properties.StoreTokens([new AuthenticationToken { Name = "access_token", Value = session.AccessToken }]);
 
         const string scheme = CookieAuthenticationDefaults.AuthenticationScheme;

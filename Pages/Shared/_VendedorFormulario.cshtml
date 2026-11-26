@@ -1,6 +1,7 @@
 <form id="vendedor-form" class="producto-form">
     @Html.AntiForgeryToken()
-    <fieldset id="vendedor-campos" class="producto-form__section">
+    <fieldset id="vendedor-campos">
+        <div class="vendedores__form-body">
         <div class="producto-form__grid">
             <div class="producto-form__field producto-form__wide" id="vendedor-cuenta">
                 <label for="vendedor-usuario">UUID de la cuenta <span class="required">*</span></label>
@@ -19,6 +20,7 @@
                 <label class="vendedores__check"><input id="vendedor-activo" type="checkbox" checked> Perfil activo</label>
                 <p class="vendedores__hint">Un perfil inactivo conserva su historial y pierde acceso a las operaciones comerciales.</p>
             </div>
+        </div>
         </div>
     </fieldset>
     <p class="producto-form__error vendedores__form-error" id="vendedor-error" role="alert" hidden></p>

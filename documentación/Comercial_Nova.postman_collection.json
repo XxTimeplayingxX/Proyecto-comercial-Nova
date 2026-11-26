@@ -79,6 +79,22 @@
   ],
   "item": [
     {
+      "name": "Nova local — sesión",
+      "description": "Cookie Nova.Session. Después de la actualización iniciar sesión de nuevo: cookies antiguas sin última actividad son rechazadas. GET no cuenta como actividad. Aviso UI a 120 s, cierre por inactividad a 180 s (también validado en servidor), máximo absoluto de 60 min o expires_at anterior de Supabase. No se cambió configuración remota ni hay refresh automático. Obtener RequestVerificationToken del layout autenticado (GET /Productos o /Vendedores). Ver documentación/Sesion.md.",
+      "item": [
+        {
+          "name": "Consultar mi perfil y vencimientos",
+          "request": { "method": "GET", "header": [{ "key": "Accept", "value": "application/json" }], "url": "{{nova_base_url}}/api/sesion",
+            "description": "200:{nombre,apellido,email,rol,venceEn,tokenVenceEn,tokenDuracionSegundos,ultimaActividad,ahora,avisoSegundos,inactividadSegundos,maximoMinutos}. Timestamps Unix en segundos; duración del token procede de expires_in del login y puede ser null si no se informó. Lee solo el perfil propio activo (profiles.first_name,last_name,role) con JWT de usuario. No devuelve JWT ni actualiza actividad. 401 sesión ausente/vencida; 403 perfil no activo; 502/503 Supabase/configuración. La duración del JWT y el límite absoluto local son conceptos distintos." }
+        },
+        {
+          "name": "Registrar actividad humana sin ampliar límite absoluto",
+          "request": { "method": "POST", "header": [{ "key": "Accept", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }], "url": "{{nova_base_url}}/api/sesion/actividad",
+            "description": "Sin cuerpo. Requiere cookie válida y antifalsificación. 200:{ultimaActividad,venceEn,ahora}; reemite cookie con última actividad actual y mantiene IssuedUtc, ExpiresUtc y token originales. No renueva JWT, no aumenta el límite de 60 min y no recupera sesiones ya vencidas. 400 CSRF; 401 ausencia/180 s sin actividad o vencimiento absoluto. La UI llama por interacción real, no por un polling que mantenga viva la sesión." }
+        }
+      ]
+    },
+    {
       "name": "Storage — imágenes de productos",
       "description": "Bucket product-images configurado el 2026-11-25: lectura pública, 5 MiB, JPEG/PNG/WebP. Solo admin activo puede cargar dentro de catalogo/{auth.uid()}/. SELECT de metadatos solo admin; no hay UPDATE/DELETE ni upsert. Usar fotografías comerciales no confidenciales. No se cambió el plan. No ejecutar cargas en bloque; los archivos ocupan Storage aunque todavía no estén asociados a un producto. Ver documentación/Storage.md y storage_product_images.sql.",
       "item": [

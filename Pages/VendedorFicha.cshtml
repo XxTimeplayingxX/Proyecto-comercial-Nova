@@ -44,13 +44,21 @@
             @Html.AntiForgeryToken()
             <input type="hidden" id="ficha-operacion" value="@Guid.NewGuid()">
             <p id="ficha-mensaje" class="ficha__feedback" role="status" hidden></p>
+            @if (!canManageAuth)
+            {
+                <div class="ficha__configuration" id="ficha-auth-required" role="status">
+                    <strong>@(edit ? "Cambios de credenciales no habilitados" : "Creación de cuentas no habilitada")</strong>
+                    <p>@(edit ? "Este servidor permite editar el perfil, pero necesita configurar el acceso administrativo de Supabase Auth para cambiar el correo o la contraseña." : "Este servidor todavía no tiene configurado el acceso para crear usuarios en Supabase Auth. Completar el formulario no habilitará el botón hasta que el administrador configure ese acceso.")</p>
+                    @if (!edit) { <a id="ficha-vincular" asp-page="/Vendedores" asp-route-vincular="true">Vincular una cuenta que ya existe</a> }
+                </div>
+            }
             <fieldset id="ficha-campos" disabled="@(edit)">
                 <section class="ficha__section" aria-labelledby="ficha-personal">
                     <h2 id="ficha-personal"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3"/><path d="M5 20v-2a7 7 0 0 1 14 0v2H5Z"/></svg> Información personal y rol</h2>
                     <div class="ficha__grid">
                         <label>Nombres <span class="required">*</span><input name="nombre" autocomplete="off" maxlength="80" placeholder="Ej. Elena" required></label>
                         <label>Apellidos <span class="required">*</span><input name="apellido" autocomplete="off" maxlength="80" placeholder="Ej. Vega Morales" required></label>
-                        <label class="ficha__wide">Correo electrónico institucional <span class="required">*</span><input name="email" type="email" maxlength="254" placeholder="nombre@ejemplo.com" autocomplete="off" readonly="@(!canManageAuth)" required></label>
+                        <label class="ficha__wide">Correo electrónico institucional <span class="required">*</span><input name="email" type="email" maxlength="254" placeholder="nombre@ejemplo.com" autocomplete="off" readonly="@(edit && !canManageAuth)" required></label>
                     </div>
                     <fieldset class="ficha__roles">
                         <legend>Rol comercial <span class="required">*</span></legend>
@@ -81,10 +89,6 @@
                         <span><strong>Estado de la cuenta <span id="ficha-estado">Activo</span></strong><small>Los perfiles inactivos conservan su historial y pierden acceso a las operaciones.</small></span>
                         <input name="activo" type="checkbox" role="switch" checked>
                     </label>
-                    @if (!canManageAuth)
-                    {
-                        <p class="ficha__callout">El servidor requiere acceso administrativo de Supabase Auth para @(edit ? "cambiar el correo o la contraseña." : "crear credenciales.") @if (!edit) { <a id="ficha-vincular" asp-page="/Vendedores" asp-route-vincular="true">Vincular una cuenta existente</a> }</p>
-                    }
                 </section>
                 @if (edit)
                 {
@@ -102,7 +106,7 @@
             </fieldset>
             <footer class="ficha__footer">
                 <a class="catalogo__secondary" asp-page="/Vendedores">Cancelar</a>
-                <button class="catalogo__primary" id="ficha-guardar" type="submit" disabled="@(edit || !canManageAuth)">@(edit ? "Guardar cambios" : "Crear vendedor")</button>
+                <button class="catalogo__primary" id="ficha-guardar" type="submit" disabled="@(edit || !canManageAuth)" aria-describedby="@(!canManageAuth ? "ficha-auth-required" : null)" title="@(!edit && !canManageAuth ? "Falta configurar el acceso administrativo de Supabase Auth en el servidor." : null)">@(edit ? "Guardar cambios" : "Crear vendedor")</button>
             </footer>
         </form>
         @if (edit && canManageAuth)

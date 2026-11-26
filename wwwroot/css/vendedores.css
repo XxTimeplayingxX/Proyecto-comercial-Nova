@@ -17,11 +17,20 @@
 .vendedores__retry button { margin-bottom: 1rem; }
 .vendedores .catalogo__empty { margin: 0; }
 #vendedor-modal { width: min(34rem, calc(100% - 1rem)); }
+#vendedor-form .vendedores__form-body { padding: 1.25rem 1.5rem; }
+#vendedor-form .producto-form__grid { gap: 1.1rem 1rem; }
+#vendedor-form .producto-form__field { gap: .4rem; }
+#vendedor-form .producto-form__field > input { min-height: 2.4rem; height: 2.4rem; padding: .55rem .7rem; font-size: .78rem; }
+#vendedor-form .producto-form__field small { line-height: 1.6; }
+#vendedor-form .vendedores__form-error { margin-inline: 1.5rem; }
 .vendedores__check { display: inline-flex; align-items: center; gap: .45rem; font-weight: 600; }
 .vendedores__check input { accent-color: var(--nova-blue); }
 .vendedores__hint { margin: .35rem 0 0; color: var(--nova-muted); }
 .vendedores__form-error { margin-top: 0; margin-bottom: 1rem; }
 @media (max-width: 600px) {
+  #vendedor-form .vendedores__form-body { padding: 1rem; }
+  #vendedor-form .producto-form__grid { grid-template-columns: 1fr; gap: 1rem; }
+  #vendedor-form .vendedores__form-error { margin-inline: 1rem; }
   .vendedores .catalogo__kpis { gap: .4rem; }
   .vendedores .kpi { padding: .7rem .45rem; }
   .vendedores .kpi__icon { display: none; }

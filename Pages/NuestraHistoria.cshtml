@@ -9,19 +9,49 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/story.css" asp-append-version="true">
 }
+@section Scripts {
+    <script src="~/js/story.js" asp-append-version="true" defer></script>
+}
 
-<article class="story" aria-labelledby="story-title">
+<article class="story story--timeline" aria-labelledby="story-title">
     <header class="story__intro">
-        <h1 id="story-title">Tecnología que conecta, innovación que transforma.</h1>
-        <p>Conoce quiénes somos y hacia dónde queremos llegar.</p>
+        <p class="story__eyebrow">Comercial Nova / Nuestra historia</p>
+        <h1 id="story-title">Todo empezó<br>con una batería.</h1>
+        <p>Un sueño pequeño. Una caja sobre el mostrador. Y muchas ganas de conectar a las personas con la tecnología.</p>
+        <span class="story__fiction">Relato ficticio del proyecto académico</span>
     </header>
 
-    <img class="story__photo" src="~/images/nova-login-desk.jpg" asp-append-version="true"
-        width="960" height="720" alt="Laptop, teléfono y audífonos sobre un escritorio de madera">
+    <figure class="story__hero">
+        <div class="story__hero-frame" data-story-parallax><img src="~/images/nova-story-origen.png" asp-append-version="true" width="1536" height="1024" fetchpriority="high" alt="Recreación en blanco y negro de Ernesto Salazar organizando baterías en un pequeño mostrador"></div>
+        <figcaption><span>Antes de las pantallas,<br>estaban las personas.</span><small>Una idea que todavía nos acompaña.</small></figcaption>
+    </figure>
+
+    <section class="story__opening" aria-labelledby="story-founder"><span class="story__eyebrow">El origen de una idea</span><div><h2 id="story-founder">Ernesto Salazar tenía un sueño.<br>Y, para empezar, unas cuantas pilas.</h2><p>Imaginaba un lugar donde la tecnología se entendiera sin complicaciones. Empezó por lo esencial: baterías para radios, linternas y cualquier aparato que necesitara volver a funcionar. No tenía un gran local, pero sí una regla: escuchar primero, vender después.</p></div></section>
+
+    <nav class="story__eras" aria-label="Etapas de nuestra historia"><a href="#historia-1968" aria-current="location">1968 <span>El comienzo</span></a><a href="#historia-1986">1986 <span>El primer local</span></a><a href="#historia-2005">2005 <span>Nuevas conexiones</span></a><a href="#historia-2026">2026 <span>Nova, hoy</span></a></nav>
+
+    <ol class="story__timeline" id="story-timeline">
+        <li class="story__milestone" id="historia-1968" data-story-reveal>
+            <div class="story__milestone-copy"><span class="story__chapter">01 / La primera chispa</span><time datetime="1968">1968</time><h2>Un negocio con mucha energía.</h2><p>Con una caja de baterías y una libreta, Ernesto empezó a atender a sus vecinos. Cada radio que volvía a sonar era una pequeña victoria; cada cliente que regresaba, una razón para seguir.</p><p class="story__aside">El capital era limitado. Las ganas de vender pilas, aparentemente, eran recargables.</p></div>
+            <figure class="story__milestone-photo"><div class="story__image-frame" data-story-parallax><img src="~/images/nova-story-origen.png" asp-append-version="true" width="1536" height="1024" loading="lazy" decoding="async" alt="Escena ficticia de 1968: Ernesto acomoda baterías junto a una radio y una libreta"></div><figcaption>El primer mostrador. Lo importante ya estaba ahí.</figcaption></figure>
+        </li>
+        <li class="story__milestone" id="historia-1986" data-story-reveal>
+            <div class="story__milestone-copy"><span class="story__chapter">02 / Un lugar propio</span><time datetime="1986">1986</time><h2>Una puerta abierta al barrio.</h2><p>Las baterías hicieron espacio para radios, calculadoras y reproductores de casetes. Llegó el primer local y, con él, algo más valioso que una vitrina: la confianza de quienes recomendaban el negocio.</p><p class="story__aside">El inventario todavía cabía en una libreta. La letra de Ernesto no siempre ayudaba.</p></div>
+            <figure class="story__milestone-photo"><div class="story__image-frame" data-story-parallax><img src="~/images/nova-story-local.png" asp-append-version="true" width="1536" height="1024" loading="lazy" decoding="async" alt="Recreación del primer local en 1986, con Ernesto atendiendo entre radios, calculadoras y casetes"></div><figcaption>Más productos. La misma atención de siempre.</figcaption></figure>
+        </li>
+        <li class="story__milestone" id="historia-2005" data-story-reveal>
+            <div class="story__milestone-copy"><span class="story__chapter">03 / Aprender a cambiar</span><time datetime="2005">2005</time><h2>Del mostrador al primer clic.</h2><p>Llegaron las computadoras, los nuevos accesorios y una generación con otras preguntas. El equipo creció y aprendió que evolucionar también significaba explicar, acompañar y seguir aprendiendo junto al cliente.</p><p class="story__aside">Ernesto aceptó cambiar la libreta por una computadora. Por precaución, guardó la libreta.</p></div>
+            <figure class="story__milestone-photo"><div class="story__image-frame" data-story-parallax><img src="~/images/nova-story-evolucion.png" asp-append-version="true" width="1536" height="1024" loading="lazy" decoding="async" alt="Escena ficticia de 2005: Ernesto y una compañera revisan un pedido en una tienda de computadoras"></div><figcaption>Nuevas herramientas para una idea que seguía intacta.</figcaption></figure>
+        </li>
+        <li class="story__milestone" id="historia-2026" data-story-reveal>
+            <div class="story__milestone-copy"><span class="story__chapter">04 / Lo que nos mueve</span><time datetime="2026">2026</time><h2>Más tecnología.<br>La misma cercanía.</h2><p>Hoy imaginamos Nova como un espacio para elegir con confianza: un catálogo claro, un equipo que conoce sus productos y procesos que cuidan cada detalle. La tecnología cambia. La intención de ayudar permanece.</p><p class="story__aside">Y sí: en esta historia, siempre habrá un lugar para las baterías.</p></div>
+            <figure class="story__milestone-photo"><div class="story__image-frame" data-story-parallax><img src="~/images/nova-story-presente.png" asp-append-version="true" width="1536" height="1024" loading="lazy" decoding="async" alt="Recreación contemporánea de Nova con laptops, monitores y un equipo atendiendo a un cliente"></div><figcaption>El siguiente capítulo se construye con cada persona.</figcaption></figure>
+        </li>
+    </ol>
 
     <section class="story__card story__history" aria-labelledby="story-origin">
-        <h2 id="story-origin">Nuestra historia</h2>
-        <p>Comercial Nova nació con el propósito de acercar la tecnología a las personas, ofreciendo productos que facilitan su vida cotidiana. Nuestro crecimiento nos ha impulsado a innovar en nuestros procesos y a adoptar soluciones digitales para brindar una experiencia comercial eficiente, confiable y humana.</p>
+        <h2 id="story-origin">Lo que permanece, aunque todo cambie.</h2>
+        <p>De una caja de baterías a un catálogo de tecnología, esta historia imaginada habla de lo que queremos construir: un comercio cercano, claro y confiable. Las herramientas evolucionan; la manera de tratar a las personas sigue siendo el punto de partida.</p>
     </section>
 
     <div class="story__principles">
@@ -65,9 +95,9 @@
 
     <figure class="story__quote">
         <span aria-hidden="true">“</span>
-        <blockquote>«Crecer no es solamente vender más, también es aprender a hacerlo mejor.»</blockquote>
-        <figcaption>Comercial Nova</figcaption>
+        <blockquote>«Primero vendimos energía. Después aprendimos a conectar ideas.»</blockquote>
+        <figcaption>Ernesto Salazar · Fundador ficticio de Comercial Nova</figcaption>
     </figure>
 
-    <footer class="story__footer">Comercial Nova · Proyecto académico UEES</footer>
+    <footer class="story__footer">Comercial Nova · Proyecto académico UEES<br><small>Personaje, fechas y escenas creados para este relato. Fotografías generadas con IA.</small></footer>
 </article>
