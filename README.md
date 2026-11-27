@@ -1,6 +1,12 @@
 # Nova
 
+## Dashboard administrativo y recorrido guiado
+
+`/Bienvenida` ahora muestra indicadores reales, filtros Hoy/Semana/Mes, gráfico de siete días, top tres productos, ventas paginadas y detalle en modal. Solo administradores: página, API y RPC verifican el acceso; los vendedores entran directamente a Ventas. La cabecera ofrece **¿Primera vez por aquí?** para iniciar voluntariamente un recorrido de las opciones de la página. [Consultas, contratos, permisos, alcance y pruebas](documentación/Dashboard.md).
+
 ## Caso de estudio y sustentación
+
+[Resolución práctica de los seis puntos](documentación/Resolucion_casos.md): protección de stock confirmada en Supabase, toasts de venta, propuesta de concurrencia optimista y plan de QA, documentación y responsive. Incluye pruebas focalizadas versionadas y distingue simulación, SQL real y pendientes.
 
 La [revisión del caso académico](documentación/Caso_de_estudio.md) relaciona los seis problemas con código, evidencia y pendientes; incluye arquitectura, conceptos del curso y comparación tecnológica. La [guía de defensa](documentación/Defensa_del_proyecto.md) propone una exposición de diez minutos, demo válida/inválida y respuestas a las preguntas del PDF. La concurrencia real de ventas sigue pendiente de ensayo y la edición de productos aún no detecta versiones obsoletas. Revisión documental del 2026-11-26, sin publicación en GitHub.
 

@@ -1,0 +1,19 @@
+.nova-tour-start { margin-left:auto; border:0; background:#eef3ff; color:var(--nova-blue); padding:.5rem .7rem; border-radius:.45rem; font-size:.72rem; cursor:pointer; white-space:nowrap; }
+.nova-tour { position:fixed; margin:0; width:min(350px,calc(100vw - 24px)); max-height:calc(100svh - 24px); overflow-y:auto; padding:1.2rem; background:#fff; color:#17264a; border:1px solid #dce5ff; border-radius:1rem; box-shadow:0 20px 80px #10224a3d; animation:tour-enter .18s ease-out; }
+.nova-tour::backdrop { background:#0b173a52; }
+.nova-tour__heading { display:flex; align-items:center; justify-content:space-between; gap:.8rem; color:var(--nova-blue); font-size:.7rem; font-weight:600; }
+.nova-tour__heading button { border:0; background:#f1f4fc; color:#61718c; border-radius:50%; width:1.8rem; height:1.8rem; cursor:pointer; font-size:1.2rem; }
+.nova-tour h2 { margin:1rem 0 .65rem; font-size:1.1rem; letter-spacing:-.025em; outline:none; }
+.nova-tour p { font-size:.8rem; line-height:1.65; color:var(--nova-muted); }
+.nova-tour footer { display:flex; justify-content:space-between; gap:.7rem; margin-top:1.1rem; }
+.nova-tour footer button { border:1px solid #dce5ff; border-radius:.45rem; color:var(--nova-blue); background:#fff; padding:.65rem .85rem; font-size:.75rem; cursor:pointer; }
+.nova-tour footer button:last-child { background:var(--nova-blue); color:white; border-color:var(--nova-blue); }
+.nova-tour footer button:disabled { opacity:.4; cursor:default; }
+.nova-tour .nova-tour__hint { font-size:.65rem; text-align:center; margin:.85rem 0 0; }
+.nova-tour__dots { display:flex; gap:4px; margin-top:.8rem; }
+.nova-tour__dots span { height:3px; flex:1; border-radius:10px; background:#e8edfa; }
+.nova-tour__dots .active { background:var(--nova-blue); }
+.nova-tour-target { outline:3px solid #7da2ff !important; outline-offset:5px; border-radius:6px; }
+@keyframes tour-enter { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+@media(max-width:600px) { .nova-tour-start { font-size:.65rem; padding:.4rem; white-space:normal; max-width:100px; }.nova-tour { width:calc(100vw - 24px); } }
+@media(prefers-reduced-motion:reduce) { .nova-tour { animation:none; } }

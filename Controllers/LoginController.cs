@@ -18,7 +18,7 @@ public sealed class LoginController(SupabaseAuthService authService, SupabasePer
     [AcceptVerbs("GET", "HEAD")]
     [AcceptVerbs("GET", "HEAD", Route = "/")]
     public IActionResult Index() => User.Identity?.IsAuthenticated == true
-        ? RedirectToPage("/Index")
+        ? RedirectToPage(User.IsInRole("admin") ? "/Index" : "/Ventas")
         : View(new LoginInput());
 
     [HttpPost(Name = "SignIn")]
@@ -88,7 +88,7 @@ public sealed class LoginController(SupabaseAuthService authService, SupabasePer
         await HttpContext.SignInAsync(scheme, new ClaimsPrincipal(identity), properties);
 
         TempData["LoginSuccess"] = true;
-        return RedirectToPage("/Index");
+        return RedirectToPage(perfil.Role == "admin" ? "/Index" : "/Ventas");
     }
 
     [Authorize]

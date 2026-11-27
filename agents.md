@@ -1,6 +1,6 @@
 # Contexto para agentes — Comercial Nova
 
-Última actualización: 2026-11-26.
+Última actualización: 2026-11-27.
 
 ## Propósito y mantenimiento
 
@@ -31,7 +31,8 @@ Flujo del catálogo: navegador → `/api/productos...` en Nova → servicio HTTP
 - Navegación y sesión: correo/avatar abre perfil propio; sidebar de escritorio ocultable y redimensionable de 200–340 px, con persistencia local e íconos animados. `workspace-controls.css`, `workspace.js`, `session.js` y layout compartido. Modal de inactividad a los 120 s, cierre a los 180 s, explícitamente acordado con el usuario. Respeta movimiento reducido. [Contrato](documentación/Sesion.md).
 - `Pages/Ventas.cshtml`: nueva venta con búsqueda/categorías, ocho skeletons por carga, carrito, cliente opcional, validación y confirmación. Estilos y lógica en `ventas.css` y `ventas.js`. Navegación responsive compartida en `_WorkspaceNav` y `workspace.js`; drawer modal hasta 900 px. Ver `documentación/Ventas.md`.
 - `Views/Login/Index.cshtml`: formulario de inicio de sesión; recursos en `wwwroot/css/login.css` y `wwwroot/js/login.js`.
-- `Pages/Index.cshtml`: bienvenida; el menú la presenta como Dashboard. No asumir que ya integra los indicadores de ventas.
+- `Pages/Index.cshtml` y `Index.cshtml.cs`: dashboard solo admin, con verificación de perfil activo antes del render; indicadores, periodos, gráfico de siete días, ranking, ventas paginadas y detalle. `dashboard.css/js`; consultas nuevas documentadas en `documentación/Dashboard.md`. Seller entra a Ventas y no ve el enlace al dashboard.
+- Recorrido guiado en la cabecera **¿Primera vez por aquí?**, solo por clic. `tour.css/js`, diálogo nativo, pasos de los elementos visibles según página/rol, sin escrituras ni inicio automático. Cede al aviso de inactividad y respeta movimiento reducido. Ver `documentación/Dashboard.md`.
 - `Pages/Productos.cshtml`: catálogo con búsqueda por nombre o SKU, filtros por marca, categoría y estado, paginación, actualización manual, indicadores y diálogo de detalle. Lógica en `wwwroot/js/productos.js` y estilos en `wwwroot/css/productos.css`.
 - **Agregar stock** en las acciones del producto reutiliza el diálogo compartido. Muestra stock del listado y estimación, acepta cantidad entera, motivo y observaciones opcionales. Refresca tabla/KPI tras confirmar. Parcial `_StockFormulario.cshtml`, `stock-form.js` y `stock-form.css`.
 - `Pages/Vendedores.cshtml` y `wwwroot/js/vendedores.js`: directorio administrativo, búsqueda, métricas, vinculación de una cuenta Auth existente y edición/activación de perfiles seller. [Guía y contrato](documentación/Vendedores.md).
@@ -45,6 +46,8 @@ Flujo del catálogo: navegador → `/api/productos...` en Nova → servicio HTTP
 Mantener estados de carga, vacío y error recuperable. No inventar productos, fotografías o indicadores para simular una integración. Los KPI fallidos deben mostrar ausencia de datos, no ceros falsos.
 
 ## Backend web actual
+
+- `DashboardController`, `SupabaseDashboardService` y `DashboardDto`: GET `/api/dashboard` y `/api/dashboard/ventas/{id}` solo admin. RPC `nova_dashboard` y `nova_dashboard_sale` de lectura, SECURITY INVOKER con perfil admin activo y RLS; migración remota `nova_dashboard_admin`. Semana desde lunes y calendario America/Guayaquil. Productos/stock actuales; ventas/top por periodo, gráfico siempre siete días. DDL aplicado `documentación/dashboard.sql`. No utiliza Auth Admin ni modifica ventas/stock. Login redirige admin a dashboard y seller a Ventas; toast de éxito compartido en layout.
 
 - `NovaSessionPolicy` fija aviso 120 s, cierre por inactividad 180 s y máximo absoluto local 60 min, limitado por vencimiento real del token. CookieEvents rechaza cookies vencidas/antiguas sin metadatos. `GET /api/sesion` consulta perfil propio activo y devuelve tiempos sin JWT. `POST /api/sesion/actividad` exige antifalsificación y reemite cookie con igual expiración absoluta. Interacción humana reportada por JS; polling no renueva. No se cambió JWT expiry remoto ni se implementó refresh. `expires_in` y `expires_at` reales del login alimentan el panel de cuenta.
 - `Controllers/VentasController.cs`, `Dtos/VentaDto.cs`, `Infrastructure/SupabaseVentasService.cs`: búsqueda paginada para venta, clientes, validación sin escritura y registro por RPC. Nuevas APIs `GET /api/ventas/productos`, `GET /api/ventas/clientes`, `POST /api/ventas/validar`, `POST /api/ventas`. Sesión en todas y antifalsificación en POST; no aceptar precios ni vendedor del navegador.
@@ -123,7 +126,7 @@ bash iniciar.sh
 
 `iniciar.sh` ejecuta `dotnet clean Nova.csproj` y, si termina correctamente, `dotnet run --project Nova.csproj`. Resuelve la carpeta del proyecto respecto al script, por lo que también admite invocación mediante su ruta desde otro directorio. Detener con `Ctrl+C`. Antes de limpiar, detener cualquier instancia anterior de Nova que mantenga los archivos de compilación en uso.
 
-No se identificó un proyecto de pruebas automatizadas en la estructura revisada. Para cambios de código, compilar y verificar el flujo afectado; registrar qué se probó y qué depende de acceso a Supabase. Un cambio exclusivamente documental no requiere ejecutar la aplicación.
+No hay un proyecto .NET de pruebas automatizadas. Hay dos pruebas focalizadas versionadas de stock: `scripts/pruebas/ventas-stock-ui.mjs` (Node 20+, DOM/red simulados) y `documentación/pruebas/ventas_stock.sql` (RPC real, sesión SQL administrativa, datos de prueba y rollback; no prueba JWT/RLS ni concurrencia). Ver `documentación/Resolucion_casos.md`. Para cambios de código, compilar y verificar el flujo afectado; registrar qué se probó y qué depende de acceso a Supabase. Un cambio exclusivamente documental no requiere ejecutar la aplicación.
 
 ## Reglas de trabajo
 
@@ -139,6 +142,12 @@ No se identificó un proyecto de pruebas automatizadas en la estructura revisada
 
 ## Documentos para retomar
 
+- [Dashboard y recorrido](documentación/Dashboard.md): APIs, SQL aplicado, roles, periodos, definiciones de KPI y evidencias. Pruebas focalizadas `scripts/pruebas/dashboard-tour.mjs` y `documentación/pruebas/dashboard.sql`.
+
+- [Revisión de la matriz QA](documentación/Revision_matriz_QA.md): 50 casos del Excel, prioridad de ejecución, brechas, rangos de resumen y nuevos escenarios propuestos.
+
+- [Resolución práctica de los seis casos](documentación/Resolucion_casos.md): stock y toasts, pruebas versionadas, propuesta de concurrencia optimista y plan de QA/UX/móvil.
+
 - [Caso de estudio y cobertura](documentación/Caso_de_estudio.md): diagnóstico del PDF académico, trazabilidad con código, conceptos del curso, comparación tecnológica y brechas.
 - [Defensa del proyecto](documentación/Defensa_del_proyecto.md): guion de diez minutos, demo válida/inválida, respuestas al PDF y evidencias pendientes antes de presentar/publicar.
 
@@ -149,6 +158,12 @@ No se identificó un proyecto de pruebas automatizadas en la estructura revisada
 - [Colección Postman](documentación/Comercial_Nova.postman_collection.json).
 
 ## Última entrega
+
+- 2026-11-27: implementado dashboard responsive según referencia con consultas reales, detalle en modal y acceso admin en página/API/RPC. Migración `nova_dashboard_admin` aplicada; dos RPC SECURITY INVOKER, sin cambios a ventas/stock/RLS previos. Login/menú diferenciados para seller. Tour compartido voluntario por clic, pasos por página, foco/progreso y prioridad de inactividad. Compilación correcta, comprobaciones SQL de solo lectura bajo authenticated/identidad emulada aprobadas, 23 casos HTTP/Razor en host con Supabase simulado y ocho escenarios DOM/red simulados aprobados. Asesor remoto solo aviso Auth previo. Postman y documentación actualizados. Pendientes navegador/teclado/teléfono reales y HTTP con JWT real; no se publicó GitHub ni se aprobaron automáticamente casos del Excel.
+
+- 2026-11-27: revisado Excel externo Matriz_QA_Comercial_Nova.xlsx sin modificarlo. Conciliados 50 casos únicos: 32 aprobados (26 reportados Brave y 6 simulados), 14 pendientes, 2 bloqueados, 2 brechas. Fórmulas y validación terminan en fila 60 y deben ampliarse al agregar casos; falta contador visible de Fallidos. Documentadas prioridades, mejoras de evidencia y propuestas QA-051–060 en Revision_matriz_QA.md. Editar vendedor existe; prioridad funcional es concurrencia optimista y cierre de venta real, seguida de historial general. No se reejecutaron escenarios ni se verificó el entorno remoto; sin APIs nuevas o cambios de Postman.
+
+- 2026-11-27: revisado enunciado y RPC real con plugin Supabase. Confirmado descuento atómico condicional `stock >= cantidad`; sin cambios de SQL/RLS remotos. Añadidos toasts de advertencia para cantidades/validación/rechazo final de stock y mensajes con solicitado/disponible en servicio. Seis casos reales de RPC aprobados con identidad emulada y rollback; consulta posterior sin productos de prueba persistidos (secuencias pueden avanzar). Seis escenarios DOM/red simulados y 24 casos POST reejecutados con Supabase simulado; compilación sin errores/advertencias. Dos scripts focalizados versionados y Postman/guías actualizados. Concurrencia real, HTTP con JWT e inspección visual pendientes; edición optimista es propuesta, no implementada. No se crearon ambientes, CI, commit ni push.
 
 - 2026-11-26: documentado en README el error de configuración de login tras clonar. El mensaje proviene de OptionsValidationException: requiere URL HTTPS y PublishableKey con prefijo sb_publishable_. El archivo local está ignorado y cada integrante debe configurarlo; añadidos ejemplo sin credenciales, precedencia de variables y reinicio. Revisión de código, sin cambios funcionales ni APIs; no se verificó el equipo del compañero ni se ejecutó login remoto.
 

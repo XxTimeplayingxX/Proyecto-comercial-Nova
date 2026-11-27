@@ -1,6 +1,14 @@
 # Comercial Nova — API
 
+## Dashboard administrativo
+
+`GET /api/dashboard?periodo=semana&pagina=1` y `GET /api/dashboard/ventas/{id}` requieren cookie Nova y rol admin. RPC desplegados `nova_dashboard` y `nova_dashboard_sale`, de lectura y con perfil admin activo. DDL en `dashboard.sql`; carpeta **Dashboard administrativo** de Postman. [Periodo, conteos, detalle, diferencias de rol, tour y pruebas](Dashboard.md). El tour solo se abre al pulsar **¿Primera vez por aquí?** y no agrega API.
+
 ## Caso académico y defensa
+
+[Revisión de la matriz Excel de QA](Revision_matriz_QA.md): conciliación de 50 casos, brechas prioritarias, propuestas QA-051–060 y ajustes de evidencia, conteos y trazabilidad. Análisis del archivo recibido el 2026-11-27, sin modificarlo ni reejecutar sus escenarios.
+
+[Resolución práctica de los seis problemas](Resolucion_casos.md), actualizada el 2026-11-27: stock y toasts implementados, pruebas focalizadas y propuestas para concurrencia de edición, QA y móvil.
 
 [Matriz de relación con el caso de estudio](Caso_de_estudio.md): diagnóstico, seis problemas, arquitectura, POO/MVC, alternativas tecnológicas y evidencia disponible. [Guía de sustentación](Defensa_del_proyecto.md): guion, demostración, respuestas a las cuatro preguntas del PDF y preparación previa a GitHub. Revisión del 2026-11-26 sin escrituras remotas ni publicación. No confundir pruebas simuladas con concurrencia real; la edición comercial de productos aún carece de control de versión.
 

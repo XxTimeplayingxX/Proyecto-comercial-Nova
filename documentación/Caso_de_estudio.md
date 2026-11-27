@@ -1,6 +1,10 @@
 # Relación del caso de estudio con Comercial Nova
 
+**Actualización del dashboard (2026-11-27):** implementados indicadores y consulta administrativa de ventas con un tour voluntario. [Dashboard: alcance y evidencia](Dashboard.md). Las referencias posteriores a una bienvenida simple pertenecen a la revisión histórica inicial; la edición simultánea y la prueba concurrente siguen pendientes.
+
 Revisión documental y de código: 2026-11-26. Complemento: [guion de sustentación](Defensa_del_proyecto.md).
+
+**Actualización 2026-11-27:** [resolución práctica de los seis puntos](Resolucion_casos.md). Confirmada la actualización condicional de stock en el RPC real, añadidos toasts y mensajes específicos, y aprobados seis casos SQL con rollback y seis escenarios de interfaz simulada. Esas dos pruebas focalizadas ahora están versionadas. Los estados de la revisión del 26 de noviembre que siguen debajo son históricos; siguen pendientes concurrencia real y control de versiones en edición.
 
 ## Fuente, alcance y conclusión
 

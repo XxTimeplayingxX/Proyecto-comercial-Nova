@@ -1,6 +1,12 @@
 # Nueva venta — pantalla, contratos y validación
 
-Actualizado: 2026-11-25. Ruta de pantalla: `/Ventas`, requiere sesión. No hay aún un historial/listado de ventas en Nova.
+Actualizado: 2026-11-27. Ruta de pantalla: `/Ventas`, requiere sesión. No hay aún un historial/listado de ventas en Nova.
+
+## Validación de stock y toasts (2026-11-27)
+
+La función real ya descuenta mediante `UPDATE ... WHERE stock >= cantidad` y rechaza con `INSUFFICIENT_STOCK`; no fue necesario modificar SQL remoto. `/validar` ahora distingue stock cero y cantidad solicitada superior a disponible en sus mensajes. La interfaz muestra advertencias con el servicio compartido de toasts al escribir una cantidad inválida, al recibir validación fallida y al recibir `INSUFFICIENT_STOCK` durante registro. Mantiene también el mensaje junto al carrito. Una respuesta incierta conserva el UUID y pedido exactos como antes.
+
+[Detalle de los seis casos y comprobaciones](Resolucion_casos.md). Seis casos del RPC real aprobados en transacción revertida, seis escenarios de DOM/red simulados y 24 casos POST reejecutados en host aislado con Supabase simulado. Compilación correcta. Scripts focalizados versionados: [SQL](pruebas/ventas_stock.sql) e [interfaz](../scripts/pruebas/ventas-stock-ui.mjs). No se probaron concurrencia real ni HTTP con JWT real; revisión visual pendiente. La sección final conserva el registro histórico de la implementación inicial del 2026-11-25.
 
 ## Comportamiento implementado
 

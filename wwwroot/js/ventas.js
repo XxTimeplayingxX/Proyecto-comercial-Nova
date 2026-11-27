@@ -15,6 +15,10 @@
     const box = $('venta-mensaje'); box.textContent = value; box.hidden = !value;
     box.classList.toggle('pos__message--success', success);
   }
+  function warning(value, title = 'Revisa las existencias') {
+    message(value);
+    window.NovaToasts?.show({ status: 'warning', title, message: value });
+  }
   function locked() { return busy || pending !== null; }
   async function read(url, signal) {
     const response = await fetch(url, { signal, cache: 'no-store', headers: { Accept: 'application/json' } });
@@ -70,7 +74,7 @@
     add.addEventListener('click', () => {
       if (locked()) return;
       const existing = cart.get(product.id), quantity = (existing?.cantidad || 0) + 1;
-      if (quantity > product.stock) return message('Ya agregaste todas las unidades disponibles de este producto.');
+      if (quantity > product.stock) return warning(`No puedes agregar más unidades de ${product.nombre}. Disponibles: ${product.stock}.`);
       cart.set(product.id, { productoId: product.id, nombre: product.nombre, sku: product.sku, precio: product.precio, stock: product.stock, cantidad: quantity });
       invalidate(); renderCart();
     });
@@ -158,7 +162,15 @@
       minus.disabled = locked() || item.cantidad <= 1; plus.disabled = locked() || item.cantidad >= item.stock;
       const change = value => {
         if (locked()) return;
-        if (!Number.isInteger(value) || value < 1 || value > item.stock) { input.value = item.cantidad; message(`Selecciona entre 1 y ${item.stock} unidades de ${item.nombre}.`); return; }
+        if (!Number.isInteger(value) || value < 1) {
+          input.value = item.cantidad; warning('La cantidad debe ser un número entero mayor que cero.', 'Revisa la cantidad'); return;
+        }
+        if (value > item.stock) {
+          input.value = item.cantidad;
+          warning(item.stock === 0 ? `${item.nombre} ya no tiene existencias. Retíralo del pedido o actualiza el catálogo.`
+            : `Stock insuficiente para ${item.nombre}: solicitaste ${value} y hay ${item.stock} disponibles.`);
+          return;
+        }
         item.cantidad = value; invalidate(); renderCart(); $(`venta-cantidad-${item.productoId}`)?.focus();
       };
       minus.addEventListener('click', () => change(item.cantidad - 1)); plus.addEventListener('click', () => change(item.cantidad + 1));
@@ -192,7 +204,8 @@
         if (item) Object.assign(item, { nombre: line.nombre, sku: line.sku, precio: line.precio, stock: line.stock });
       }
       validated = data.valida === true;
-      message(validated ? 'Pedido validado. Revisa los precios actualizados y confirma la venta.' : data.errores.join('\n'), validated);
+      if (validated) message('Pedido validado. Revisa los precios actualizados y confirma la venta.', true);
+      else warning(data.errores.join('\n'), 'No se puede confirmar el pedido');
     } catch (e) { message(e.message); }
     finally { busy = false; renderCart(); }
   });
@@ -211,7 +224,9 @@
         if (response.status >= 400 && response.status < 500 && data?.code !== 'REQUEST_ID_REUSED') {
           sessionStorage.removeItem(storageKey); pending = null; validated = false;
         }
-        throw new Error(response.status === 401 ? 'La sesión venció. Inicia sesión nuevamente.' : data?.title || 'No se pudo confirmar la venta. Reintenta el mismo pedido.');
+        const failure = new Error(response.status === 401 ? 'La sesión venció. Inicia sesión nuevamente.' : data?.title || 'No se pudo confirmar la venta. Reintenta el mismo pedido.');
+        failure.code = data?.code;
+        throw failure;
       }
       if (!Number.isSafeInteger(data?.saleId) || data.saleId <= 0 || typeof data.total !== 'number' || data.total <= 0) throw new Error('La respuesta no confirmó el registro. Reintenta la misma venta.');
       try { sessionStorage.removeItem(storageKey); } catch { /* The confirmed RPC result remains authoritative; a leftover snapshot can only replay it. */ }
@@ -219,7 +234,11 @@
       $('venta-recibo').textContent = `✓ Venta #${data.saleId} ${data.replayed ? 'recuperada' : 'registrada'} · Total confirmado: ${money.format(data.total)}.`;
       $('venta-recibo').hidden = false; message('La venta está confirmada y el inventario fue actualizado.', true);
       $('venta-cliente').value = ''; loadProducts();
-    } catch (e) { message(`${e.message}${pending ? ' El pedido está protegido: usa «Reintentar la misma venta» sin cambiar sus artículos.' : ' Revisa el pedido y vuelve a validarlo.'}`); }
+    } catch (e) {
+      const detail = `${e.message}${pending ? ' El pedido está protegido: usa «Reintentar la misma venta» sin cambiar sus artículos.' : ' Revisa el pedido y vuelve a validarlo.'}`;
+      if (e.code === 'INSUFFICIENT_STOCK') warning(detail, 'Venta rechazada por falta de stock');
+      else message(detail);
+    }
     finally { busy = false; renderCart(); }
   }
   $('venta-confirmar').addEventListener('click', confirmSale);

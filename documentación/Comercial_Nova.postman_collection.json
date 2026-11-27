@@ -5,6 +5,7 @@
     "description": "Configurar credenciales locales. No compartir tokens ni exportar valores sensibles. Las escrituras modifican datos; no ejecutar toda la colección en bloque. Pantalla Productos desplegada y verificada por SQL; HTTP autenticado pendiente."
   },
   "variable": [
+    { "key": "dashboard_sale_id", "value": "1" },
     { "key": "product_image_url", "value": "" },
     { "key": "storage_object_path", "value": "" },
     { "key": "storage_user_id", "value": "" },
@@ -78,6 +79,92 @@
     }
   ],
   "item": [
+    {
+      "name": "Dashboard administrativo",
+      "description": "Implementación 2026-11-27. Nova usa cookie cifrada; Supabase usa JWT del usuario solo desde servidor. Página /Bienvenida y APIs exigen admin; RPC también comprueba perfil activo. Periodos en America/Guayaquil: hoy, semana desde lunes, mes hasta cierre del día actual. Gráfico siempre últimos siete días. No procesa pagos ni modifica ventas/stock. El tour se inicia solo con clic y no tiene API.",
+      "item": [
+        {
+          "name": "Nova — resumen y ventas paginadas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{nova_base_url}}/api/dashboard?periodo=semana&pagina=1",
+            "description": "Requiere cookie Nova.Session con rol admin; el RPC rechaza admin desactivado/degradado. periodo: hoy|semana|mes; pagina entero 1..100000; 5 filas por página. 200:{period,from,to,generatedAt,page,summary:{salesTotal,salesCount,productsCount,lowStockCount,outOfStockCount},daily:[{date,amount}],topProducts:[{id,name,price,category,units,revenue}],recentSales:[{id,date,total,status,seller}],totalRows}. Ventas/importe/top: completed en periodo; listado incluye completed y cancelled. Productos y stock actuales; low excluye agotados. price del top es actual, no histórico; detalle usa precio vendido. IDs son texto. Daily contiene siete fechas y ceros solo si consulta válida. 400 filtros; 401 sesión; 403 rol/perfil; 502 respuesta externa; 503 conexión/configuración. GET sin antifalsificación; no recibe JWT ni clave desde JS. No hay datos ficticios ni ceros ante error."
+          }
+        },
+        {
+          "name": "Nova — detalle de venta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{nova_base_url}}/api/dashboard/ventas/{{dashboard_sale_id}}",
+            "description": "Cookie Nova.Session, administrador activo. ID positivo bigint. 200:{id,date,total,status,seller,customer,items:[{name,sku,quantity,price,subtotal}]}. Consumidor final cuando no hay cliente; price es unit_price de sale_details. No devuelve correo/identificación del cliente, UUID de operación ni JWT. 400 ID inválido; 401 sesión; 403 rol/perfil; 404 no existe; 502/503 servicio. Registro comercial, no factura ni prueba de cobro."
+          }
+        },
+        {
+          "name": "Supabase — consulta administrativa",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rest/v1/rpc/nova_dashboard",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "RPC de lectura SECURITY INVOKER desplegado en nova_dashboard_admin. Ejecutable por authenticated, no anon/PUBLIC; valida auth.uid() y active_role()=admin y conserva RLS. seller/inactivo recibe 403; INVALID_DASHBOARD_FILTER (22023) ante periodo/página inválidos. Respuesta igual a API local. Estos POST son consultas sin escrituras. Ejecución SQL con rol authenticated e identidad emulada probada; HTTP con JWT real pendiente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_period\": \"semana\",\n  \"p_page\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Supabase — detalle administrativo",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/rest/v1/rpc/nova_dashboard_sale",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "RPC de lectura con perfil admin activo y RLS; p_id bigint positivo. 200 objeto de detalle o JSON null si no existe (Nova convierte a 404). 403 seller/inactivo; 22023 ID no válido. No escribe ni revela secretos. DDL aplicado en documentación/dashboard.sql.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_id\": {{dashboard_sale_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     {
       "name": "Nova local — sesión",
       "description": "Cookie Nova.Session. Después de la actualización iniciar sesión de nuevo: cookies antiguas sin última actividad son rechazadas. GET no cuenta como actividad. Aviso UI a 120 s, cierre por inactividad a 180 s (también validado en servidor), máximo absoluto de 60 min o expires_at anterior de Supabase. No se cambió configuración remota ni hay refresh automático. Obtener RequestVerificationToken del layout autenticado (GET /Productos o /Vendedores). Ver documentación/Sesion.md.",
@@ -176,7 +263,7 @@
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
             "url": "{{nova_base_url}}/api/ventas/validar",
-            "description": "Cookie Nova.Session y antifalsificación. clienteId opcional positivo o null; items obligatorio, 1..100 productos distintos, productoId positivo y cantidad entera positiva. Consulta productos/precios/stock y visibilidad del cliente con JWT del usuario. Ignora precios/totales enviados por el navegador. 200:{valida:true,total,items:[{productoId,nombre,sku,cantidad,stock,precio,subtotal,imagen}],errores:[]}. 409 usa la misma estructura con valida:false y errores por stock, producto inactivo/no visible o cliente no visible. No reserva unidades y no garantiza precios inmutables hasta confirmar. 400 campos/duplicados/antifalsificación; 401 sesión; 403 permisos; 502/503 externo.",
+            "description": "Cookie Nova.Session y antifalsificación. clienteId opcional positivo o null; items obligatorio, 1..100 productos distintos, productoId positivo y cantidad entera positiva. Consulta productos/precios/stock y visibilidad del cliente con JWT del usuario. Ignora precios/totales enviados por el navegador. 200:{valida:true,total,items:[{productoId,nombre,sku,cantidad,stock,precio,subtotal,imagen}],errores:[]}. 409 usa la misma estructura con valida:false y errores por stock, producto inactivo/no visible o cliente no visible. No reserva unidades y no garantiza precios inmutables hasta confirmar. 400 campos/duplicados/antifalsificación; 401 sesión; 403 permisos; 502/503 externo. Actualización 2026-11-27: stock cero incluye error «no tiene existencias»; cantidad superior informa solicitado/disponible. Ejemplo: con stock 2 y cantidad 3 responde 409, valida:false, errores:[«Stock insuficiente para PRODUCTO: solicitaste 3 y hay 2 unidades disponibles.»]. La UI muestra toast de advertencia y mensaje junto al carrito; no confirma el pedido.",
             "body": { "mode": "raw", "raw": "{\n  \"clienteId\": null,\n  \"items\": [\n    { \"productoId\": {{product_id}}, \"cantidad\": 1 }\n  ]\n}", "options": { "raw": { "language": "json" } } }
           }
         },
@@ -189,7 +276,7 @@
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "RequestVerificationToken", "value": "{{antiforgery_token}}" }],
             "url": "{{nova_base_url}}/api/ventas",
-            "description": "ESCRITURA REAL. Cookie Nova.Session, antifalsificación, perfil admin/seller activo. Mismo cuerpo que validar más requestId UUID no vacío. Envía solo p_request_id,p_customer_id,p_items a rpc/register_sale. La base toma precios, descuenta stock y registra venta/detalle/movimientos en una transacción. 200:{saleId,total,replayed}; replayed=true recupera una operación ya confirmada sin duplicarla. Conservar exactamente UUID, cliente y artículos al reintentar tras timeout/error 5xx: NO generar otro UUID para el mismo pedido. El prerequest genera venta_request_id solo si está vacío. Para una venta nueva, vaciar esa variable explícitamente después de resolver la anterior. 409 code INSUFFICIENT_STOCK: revisar cantidades/revalidar; 409 REQUEST_ID_REUSED: UUID usado con otro cuerpo, requiere revisar la operación. 400 datos/referencias/antifalsificación; 401 sesión; 403 perfil; 502/503 resultado no confirmado. No revalidar stock antes de un replay: la venta anterior pudo descontarlo. El total devuelto por el RPC es el definitivo; no hay descuentos, impuestos desglosados, cobros bancarios ni factura fiscal en este contrato.",
+            "description": "ESCRITURA REAL. Cookie Nova.Session, antifalsificación, perfil admin/seller activo. Mismo cuerpo que validar más requestId UUID no vacío. Envía solo p_request_id,p_customer_id,p_items a rpc/register_sale. La base toma precios, descuenta stock y registra venta/detalle/movimientos en una transacción. 200:{saleId,total,replayed}; replayed=true recupera una operación ya confirmada sin duplicarla. Conservar exactamente UUID, cliente y artículos al reintentar tras timeout/error 5xx: NO generar otro UUID para el mismo pedido. El prerequest genera venta_request_id solo si está vacío. Para una venta nueva, vaciar esa variable explícitamente después de resolver la anterior. 409 code INSUFFICIENT_STOCK: revisar cantidades/revalidar; 409 REQUEST_ID_REUSED: UUID usado con otro cuerpo, requiere revisar la operación. 400 datos/referencias/antifalsificación; 401 sesión; 403 perfil; 502/503 resultado no confirmado. No revalidar stock antes de un replay: la venta anterior pudo descontarlo. El total devuelto por el RPC es el definitivo; no hay descuentos, impuestos desglosados, cobros bancarios ni factura fiscal en este contrato. Actualización 2026-11-27: INSUFFICIENT_STOCK durante registro activa toast de advertencia y requiere revisar/revalidar. No cambia el contrato ni la recuperación de resultados inciertos.",
             "body": { "mode": "raw", "raw": "{\n  \"requestId\": \"{{venta_request_id}}\",\n  \"clienteId\": null,\n  \"items\": [\n    { \"productoId\": {{product_id}}, \"cantidad\": 1 }\n  ]\n}", "options": { "raw": { "language": "json" } } }
           }
         }
@@ -1179,7 +1266,7 @@
           "name": "Registrar",
           "request": {
             "method": "POST",
-            "description": "RPC existente verificado por lectura de su definición el 2026-11-25. Requiere JWT de admin/seller activo. p_request_id UUID, p_customer_id bigint o null, p_items array de 1..100 {product_id,quantity>0}. La implementación agrupa productos, bloquea por UUID, usa precios del catálogo, descuenta existencias y escribe sales/sale_details/stock_movements en una transacción. Retorna objeto {sale_id,total,replayed}. Mismo UUID y mismo pedido recupera el resultado con replayed:true; otro cuerpo retorna HTTP409 REQUEST_ID_REUSED. Stock insuficiente/inactivo/inexistente retorna HTTP409 INSUFFICIENT_STOCK y revierte la operación. Perfil no autorizado:403 ACCESS_DENIED. No enviar precios del navegador ni actualizar stock directamente. No se ejecutó este RPC contra datos reales en la implementación de la pantalla; pruebas en host simulado. Nova lo expone mediante POST /api/ventas (cookie+antifalsificación), documentado en la carpeta Nova local — ventas.",
+            "description": "RPC existente verificado por lectura de su definición el 2026-11-25. Requiere JWT de admin/seller activo. p_request_id UUID, p_customer_id bigint o null, p_items array de 1..100 {product_id,quantity>0}. La implementación agrupa productos, bloquea por UUID, usa precios del catálogo, descuenta existencias y escribe sales/sale_details/stock_movements en una transacción. Retorna objeto {sale_id,total,replayed}. Mismo UUID y mismo pedido recupera el resultado con replayed:true; otro cuerpo retorna HTTP409 REQUEST_ID_REUSED. Stock insuficiente/inactivo/inexistente retorna HTTP409 INSUFFICIENT_STOCK y revierte la operación. Perfil no autorizado:403 ACCESS_DENIED. No enviar precios del navegador ni actualizar stock directamente. No se ejecutó este RPC contra datos reales en la implementación de la pantalla; pruebas en host simulado. Nova lo expone mediante POST /api/ventas (cookie+antifalsificación), documentado en la carpeta Nova local — ventas. Verificación adicional 2026-11-27: definición remota confirma UPDATE condicional stock>=cantidad y CHECK stock>=0. Seis casos del RPC real aprobados mediante identidad emulada en sesión administrativa y transacción revertida: cero, exceso, válida, replay, UUID distinto pedido y rollback multilínea. Script versionado documentación/pruebas/ventas_stock.sql. No equivale a HTTP con JWT, prueba de RLS ni carga concurrente.",
             "header": [
               {
                 "key": "apikey",

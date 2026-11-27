@@ -2,6 +2,8 @@
 
 Preparación: 2026-11-26. Basada en el PDF académico **CASO DE ESTUDIO PROYECTO FINAL.pdf**, secciones 5, 7 y 8 (pp. 2–4), y en la [revisión del caso y del código](Caso_de_estudio.md). Es un guion propuesto; no afirma que la demostración ya se haya realizado.
 
+**Evidencia adicional del 2026-11-27:** [resolución de casos](Resolucion_casos.md) registra seis comprobaciones sobre el RPC real con datos de prueba revertidos y seis escenarios de interfaz simulada, ambos scripts versionados. E1–E3 ahora tienen evidencia SQL, pero siguen pendientes la demo/HTTP con cuentas reales. E4 (concurrencia real) sigue pendiente. Al exponer, distinguir esta actualización de los estados históricos de la tabla del 26 de noviembre.
+
 ## Idea central
 
 «Comercial Nova necesita crecer sin perder el control de sus ventas e inventario. Priorizamos una venta validada por el servidor y registrada mediante una operación transaccional en la base. La interfaz facilita la operación, y la separación de responsabilidades permite entender y mantener el sistema. El prototipo tiene límites que identificamos y un plan para comprobarlos».

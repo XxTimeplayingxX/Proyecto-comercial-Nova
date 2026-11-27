@@ -16,6 +16,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<SupabaseCatalogoService>();
 builder.Services.AddScoped<SupabaseVentasService>();
+builder.Services.AddScoped<SupabaseDashboardService>();
 builder.Services.AddScoped<SupabaseStorageService>();
 builder.Services.AddScoped<SupabasePersonalService>();
 builder.Services.AddHttpClient<SupabaseAuthAdminService>(client => client.Timeout = TimeSpan.FromSeconds(15))

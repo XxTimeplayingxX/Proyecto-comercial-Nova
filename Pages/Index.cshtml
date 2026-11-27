@@ -1,19 +1,49 @@
 @page "/Bienvenida"
-@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@model Nova.Pages.IndexModel
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin")]
 @attribute [Microsoft.AspNetCore.Mvc.ResponseCache(NoStore = true, Location = Microsoft.AspNetCore.Mvc.ResponseCacheLocation.None)]
 @{
     Layout = "_WorkspaceLayout";
     ViewData["Title"] = "Dashboard";
-    if (TempData["LoginSuccess"] is true)
-    {
-        ViewData["Toasts"] = new[] { new ToastMessage(ToastStatus.Success, "Sesión iniciada", "Ya puedes continuar en Comercial Nova.") };
-    }
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/modal.css" asp-append-version="true">
+}
 @section Scripts {
-    <script src="~/js/site.js" asp-append-version="true" defer></script>
+    <script src="~/js/modal.js" asp-append-version="true" defer></script>
+    <script src="~/js/dashboard.js" asp-append-version="true" defer></script>
 }
-
-<div class="welcome">
-    <h1>Bienvenidos</h1>
+<div class="dashboard" id="dashboard" data-tour-page="dashboard">
+    <header class="dashboard__heading">
+        <div><p class="dashboard__eyebrow">Panel operativo <span>Administración</span></p><h1>Bienvenido a Comercial Nova</h1><p>Resumen operativo y comercial del sistema</p></div>
+        <div class="dashboard__actions"><div class="dashboard__period" role="group" aria-label="Periodo del resumen" id="dashboard-periodos">
+            <button type="button" data-period="hoy" aria-pressed="false">Hoy</button><button type="button" data-period="semana" aria-pressed="true">Esta semana</button><button type="button" data-period="mes" aria-pressed="false">Este mes</button>
+        </div><a class="dashboard__primary" asp-page="/Ventas">＋ Nueva venta</a></div>
+    </header>
+    <div id="dashboard-error" class="dashboard__error" role="alert" hidden><p id="dashboard-error-text"></p><button type="button" id="dashboard-reintentar">Reintentar</button></div>
+    <div id="dashboard-content" aria-busy="true">
+        <section class="dashboard__kpis" aria-label="Indicadores de gestión" id="dashboard-kpis">
+            <article><div><h2>Ventas del periodo</h2><strong id="dashboard-total" class="dashboard__loading">—</strong><p>USD · Ventas registradas</p></div><span class="dashboard__icon" aria-hidden="true">＄</span></article>
+            <article><div><h2>Ventas realizadas</h2><strong id="dashboard-count" class="dashboard__loading">—</strong><p>Operaciones completadas</p></div><span class="dashboard__icon" aria-hidden="true">▤</span></article>
+            <article><div><h2>Productos registrados</h2><strong id="dashboard-products" class="dashboard__loading">—</strong><p>Catálogo activo actual</p></div><span class="dashboard__icon" aria-hidden="true">▣</span></article>
+            <article class="dashboard__warning"><div><h2>Productos con stock bajo</h2><strong id="dashboard-low" class="dashboard__loading">—</strong><p id="dashboard-stock-note">Requieren reabastecimiento</p></div><span class="dashboard__icon" aria-hidden="true">△</span></article>
+        </section>
+        <div class="dashboard__middle">
+            <section class="dashboard__panel" id="dashboard-chart"><header><div><h2>Ventas de los últimos 7 días</h2><p>Montos en dólares estadounidenses (USD)</p></div><span class="dashboard__legend">Ingreso diario</span></header>
+                <div class="dashboard__chart" id="dashboard-bars" role="img" aria-label="Consultando ventas diarias"><p class="dashboard__placeholder">Consultando ventas…</p></div>
+                <p class="dashboard__footnote">Días completos y día actual · Hora de Ecuador</p>
+            </section>
+            <section class="dashboard__panel dashboard__top" id="dashboard-top"><header><div><h2>Productos más vendidos</h2><p>Top 3 por unidades del periodo</p></div><span aria-hidden="true">◎</span></header>
+                <div id="dashboard-top-list" class="dashboard__ranking"><p class="dashboard__placeholder">Consultando productos…</p></div>
+                <footer><span id="dashboard-updated">Consulta en curso</span><a asp-page="/Productos">Ver catálogo →</a></footer>
+            </section>
+        </div>
+        <section class="dashboard__panel dashboard__recent" id="dashboard-recent"><header><div><h2>Ventas recientes</h2><p>Operaciones del periodo seleccionado</p></div><button type="button" id="dashboard-actualizar" class="dashboard__link">↻ Actualizar</button></header>
+            <div class="dashboard__scroll"><table><thead><tr><th scope="col">Código de venta</th><th scope="col">Fecha</th><th scope="col">Vendedor</th><th scope="col" class="dashboard__number">Total</th><th scope="col">Estado</th><th scope="col">Acción</th></tr></thead><tbody id="dashboard-sales"><tr><td colspan="6" class="dashboard__placeholder">Consultando ventas…</td></tr></tbody></table></div>
+            <footer><span id="dashboard-pagination-status" role="status">Consultando registros…</span><div class="dashboard__pagination"><button type="button" id="dashboard-prev" aria-label="Página anterior" disabled>‹</button><span id="dashboard-page">1</span><button type="button" id="dashboard-next" aria-label="Página siguiente" disabled>›</button></div></footer>
+        </section>
+    </div>
 </div>
+<partial name="_Modal" model='@(new ModalOptions("dashboard-sale", "Detalle de venta", "Ventas / Consulta administrativa", "Registro comercial; no constituye una factura fiscal.", "_DashboardVenta"))' />

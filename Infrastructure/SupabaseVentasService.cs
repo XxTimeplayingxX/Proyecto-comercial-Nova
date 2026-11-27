@@ -80,7 +80,9 @@ public sealed class SupabaseVentasService(IHttpClientFactory clients, IHttpConte
                 errors.Add($"El producto {item.ProductoId} ya no está disponible.");
                 continue;
             }
-            if (product.Stock < item.Cantidad) errors.Add($"Stock insuficiente para {product.Name}: quedan {product.Stock} unidades.");
+            if (product.Stock < item.Cantidad) errors.Add(product.Stock == 0
+                ? $"{product.Name} no tiene existencias. No se puede vender."
+                : $"Stock insuficiente para {product.Name}: solicitaste {item.Cantidad} y hay {product.Stock} unidades disponibles.");
             lines.Add(new(product.Id, product.Name, product.Sku, item.Cantidad, product.Stock,
                 product.Price, product.Price * item.Cantidad, product.ImagePath));
         }
