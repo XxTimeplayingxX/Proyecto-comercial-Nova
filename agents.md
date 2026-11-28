@@ -142,6 +142,8 @@ No hay un proyecto .NET de pruebas automatizadas. Hay dos pruebas focalizadas ve
 
 ## Documentos para retomar
 
+- [Guía técnica para la defensa](documentación/Guia_tecnica_de_defensa.md). Controladores, flujos de pantalla, validaciones vinculadas al PDF y justificación de ASP.NET Core, PostgreSQL y Supabase.
+
 - [Dashboard y recorrido](documentación/Dashboard.md): APIs, SQL aplicado, roles, periodos, definiciones de KPI y evidencias. Pruebas focalizadas `scripts/pruebas/dashboard-tour.mjs` y `documentación/pruebas/dashboard.sql`.
 
 - [Revisión de la matriz QA](documentación/Revision_matriz_QA.md): 50 casos del Excel, prioridad de ejecución, brechas, rangos de resumen y nuevos escenarios propuestos.
@@ -158,6 +160,8 @@ No hay un proyecto .NET de pruebas automatizadas. Hay dos pruebas focalizadas ve
 - [Colección Postman](documentación/Comercial_Nova.postman_collection.json).
 
 ## Última entrega
+
+- 2026-11-27: creada la guía técnica de defensa tras contrastar el PDF original con el código. Incluye todos los controladores, pantallas y validaciones por capa, comparación tecnológica y demo válida/inválida. Revisión documental sin cambios funcionales ni ejecución de pruebas de aplicación. Continúan pendientes la concurrencia de ventas con sesiones reales y el control de versiones en edición de productos.
 
 - 2026-11-27: implementado dashboard responsive según referencia con consultas reales, detalle en modal y acceso admin en página/API/RPC. Migración `nova_dashboard_admin` aplicada; dos RPC SECURITY INVOKER, sin cambios a ventas/stock/RLS previos. Login/menú diferenciados para seller. Tour compartido voluntario por clic, pasos por página, foco/progreso y prioridad de inactividad. Compilación correcta, comprobaciones SQL de solo lectura bajo authenticated/identidad emulada aprobadas, 23 casos HTTP/Razor en host con Supabase simulado y ocho escenarios DOM/red simulados aprobados. Asesor remoto solo aviso Auth previo. Postman y documentación actualizados. Pendientes navegador/teclado/teléfono reales y HTTP con JWT real; no se publicó GitHub ni se aprobaron automáticamente casos del Excel.
 
